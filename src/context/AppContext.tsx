@@ -16,7 +16,8 @@ i18n.use(initReactI18next).init({
         quiz: 'Take Quiz',
         userDashboard: 'User Dashboard',
         admin: 'Admin Dashboard',
-        // ... other translations ...
+        heroHeading: 'Embrace Wellness with AyurVibe',
+        heroSubheading: 'Journey into Ayurveda with personalized quizzes, natural remedies, and a holistic lifestyle tailored to your unique Prakriti.',
       },
     },
     hi: {
@@ -28,7 +29,8 @@ i18n.use(initReactI18next).init({
         quiz: 'प्रश्नोत्तरी लें',
         userDashboard: 'उपयोगकर्ता डैशबोर्ड',
         admin: 'प्रशासक डैशबोर्ड',
-        // ... other translations ...
+        heroHeading: 'आयुर्वाइब के साथ कल्याण को अपनाएं',
+        heroSubheading: 'अपनी अनोखी प्रकृति के अनुसार व्यक्तिगत प्रश्नोत्तरी, प्राकृतिक उपचार और समग्र जीवनशैली के साथ आयुर्वेद की यात्रा करें।',
       },
     },
   },
@@ -78,8 +80,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     language,
     setLanguage,
     heroContent: {
-      heading: 'Discover Your AyurVibe',
-      subheading: 'Unlock your Ayurvedic constitution with a simple quiz',
+      heading: 'Embrace Wellness with AyurVibe',
+      subheading: 'Journey into Ayurveda with personalized quizzes, natural remedies, and a holistic lifestyle tailored to your unique Prakriti.',
     },
   };
 
