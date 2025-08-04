@@ -15,6 +15,10 @@ module.exports = {
         warmBeige: '#F5E6DB',
         spiceBrown: '#8B4513',
         logoGreen: '#1A9E83',
+        'leaf-1': '#A3C1AD', // Lightest green
+        'leaf-2': '#5E8C6A', // Medium green
+        'leaf-3': '#C4D7C9', // Very light green (alternative)
+        'leaf-4': '#3E6259', // Darkest green
       },
       fontFamily: {
         lora: ['Lora', 'serif'],

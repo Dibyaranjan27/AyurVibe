@@ -1,10 +1,13 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../data/firebase'; // Adjust the import path based on your Firebase config
+import { doc, setDoc } from 'firebase/firestore'; // Import Firestore functions
+import { db } from '../data/firebase'; // Adjust the import path for Firestore
 import { useTranslation } from 'react-i18next';
 import { Mail, Lock, Eye, EyeOff, Facebook } from 'lucide-react';
+import FloatingLeaves from '@/components/FloatingLeaves';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -54,15 +57,45 @@ const Register: React.FC = () => {
 
       await updateProfile(user, { displayName: name });
 
+      // Create Firestore document for the user
+      await setDoc(doc(db, 'users', user.uid), {
+        name: name,
+        email: email,
+        createdAt: new Date().toISOString(),
+      });
+
       setUser({ ...user, displayName: name });
       navigate('/results', { state: { answers: {} } });
     } catch (err: any) {
-      setError(t('registerError', { defaultValue: err.message || 'Registration failed. Please try again.' }));
+      setError(t('registerError', { defaultValue: 'Registration failed. Please try again or check your credentials.' }));
+      navigate('/login'); // Redirect to login on failure
+    }
+  };
+
+  const handleGoogleRegister = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Create or update Firestore document for the user
+      await setDoc(doc(db, 'users', user.uid), {
+        name: user.displayName || '', // Use Google display name if available
+        email: user.email || '',
+        createdAt: new Date().toISOString(),
+      }, { merge: true }); // Use merge to avoid overwriting existing data
+
+      setUser(user);
+      navigate('/results', { state: { answers: {} } });
+    } catch (err: any) {
+      setError(t('registerError', { defaultValue: 'Google registration failed. Please try again.' }));
+      navigate('/login'); // Redirect to login on failure
     }
   };
 
   return (
     <div className="h-full w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 md:p-6">
+      <FloatingLeaves />
       <div className="w-full mt-24 max-w-5xl mb-[37px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
         <div className="flex flex-col lg:flex-row-reverse">
           <div className="lg:w-1/2 relative animate-slideRight">
@@ -72,12 +105,12 @@ const Register: React.FC = () => {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-             <div className="text-center text-white z-10 max-w-sm px-6">
-  <h2 className="text-3xl font-bold mb-4">Embrace Ayurvedic Balance</h2>
-  <p className="text-lg">
-    Discover holistic well-being with Ayurveda’s ancient wisdom, guiding you to inner peace and vitality through nature’s healing touch.
-  </p>
-</div>
+              <div className="text-center text-white z-10 max-w-sm px-6">
+                <h2 className="text-3xl font-bold mb-4">Embrace Ayurvedic Balance</h2>
+                <p className="text-lg">
+                  Discover holistic well-being with Ayurveda’s ancient wisdom, guiding you to inner peace and vitality through nature’s healing touch.
+                </p>
+              </div>
             </div>
           </div>
           <div className="w-full lg:w-1/2 p-8 animate-slideLeft">
@@ -150,9 +183,12 @@ const Register: React.FC = () => {
               </button>
             </form>
             <div className="text-center mt-6">
-              <p className="text-gray-600 mb-4">Register with</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">Register with</p>
               <div className="flex justify-center space-x-4">
-                <button className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <button
+                  onClick={handleGoogleRegister}
+                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -166,7 +202,7 @@ const Register: React.FC = () => {
               </div>
             </div>
             <div className="text-center mt-4">
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Already have an account?{' '}
                 <a href="/login" className="text-ayurGreen hover:underline font-medium">
                   Log in

@@ -17,6 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export { doc, getDoc };
 
 // Authentication functions
 export const registerUser = async (email: string, password: string, name: string): Promise<User> => {

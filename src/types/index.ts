@@ -13,18 +13,17 @@ export interface User {
   quizHistory?: QuizResult[];
 }
 
+// In a file like src/types.ts or directly in your questions file
+export interface Option {
+  text: string;
+  dosha: 'Vata' | 'Pitta' | 'Kapha';
+  illustration: string; // <-- Add this property
+}
+
 export interface Question {
   id: number;
-  text: {
-    en: string;
-    hi: string;
-  };
-  options: {
-    vata: string;
-    pitta: string;
-    kapha: string;
-  };
-  category: 'physical' | 'mental' | 'habits' | 'environment';
+  text: string;
+  options: Option[];
 }
 
 export interface QuizResult {
