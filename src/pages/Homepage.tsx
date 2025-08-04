@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 import Navbar from '../components/Navbar';
-import DarkModeButton from '../components/DarkModeButton';
 import PageUpButton from '../components/PageUpButton';
+import FloatingLeaves from '../components/FloatingLeaves'; // Corrected path alias if you use it
+import { motion } from 'framer-motion';
 
 const Homepage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,7 +14,6 @@ const Homepage: React.FC = () => {
 
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [visibleCards, setVisibleCards] = useState(6);
-  const [showMore, setShowMore] = useState(true);
 
   const toggleCard = (cardId: string) => {
     setExpandedCard((prev) => (prev === cardId ? null : cardId));
@@ -24,13 +24,11 @@ const Homepage: React.FC = () => {
       setVisibleCards((prev) => prev + 3);
     } else {
       setVisibleCards(6);
-      // Scroll back to the top of the tips section smoothly
       document.getElementById('lifestyle-tips')?.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
   if (!context) return null;
-  const { heroContent } = context;
 
   const lifestyleTips = [
     {
@@ -100,8 +98,8 @@ const Homepage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
-      <DarkModeButton />
+    <div className="min-h-screen bg-gray-200 text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
+      <FloatingLeaves />
       <Navbar />
       
       {/* Hero Section with Background Blob Cut */}
@@ -120,10 +118,10 @@ const Homepage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 py-24 flex flex-col items-center justify-center relative z-10">
           <div className="text-center w-full max-w-4xl">
             <h1 className="text-6xl md:text-8xl font-bold text-white mb-8">
-              {heroContent.heading}
+              Embrace Wellness with AyurVibe
             </h1>
             <p className="text-xl md:text-2xl text-gray-100 mb-12 max-w-2xl mx-auto leading-relaxed">
-              {heroContent.subheading}
+              Journey into Ayurveda with personalized quizzes, natural remedies, and a holistic lifestyle tailored to your unique Prakriti.
             </p>
             <button
               onClick={() => navigate('/quiz')}
@@ -226,7 +224,7 @@ const Homepage: React.FC = () => {
       </div>
 
       {/* Ayurvedic Lifestyle Tips Section */}
-      <div id="lifestyle-tips" className="max-w-7xl mx-auto px-6 py-16 bg-gradient-to-b from-ayurBeige/5 to-ayurBeige/20 dark:from-gray-800 dark:to-gray-700 rounded-xl shadow-xl relative z-10 mx-4 mb-8">
+      <div id="lifestyle-tips" className="max-w-7xl mx-auto px-6 py-16 relative z-10 mx-4 mb-8">
         <h2 className="text-4xl font-lora font-bold text-ayurGreen dark:text-ayurBeige mb-10 text-center">
           {t('lifestyleTips', { defaultValue: 'Ayurvedic Lifestyle Tips' })}
         </h2>

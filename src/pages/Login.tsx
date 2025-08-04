@@ -1,9 +1,11 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { loginUser } from '../data/firebase';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { auth } from '../data/firebase'; // Adjust the import path based on your Firebase config
 import { useTranslation } from 'react-i18next';
 import { Mail, Eye, EyeOff, Facebook, Lock } from 'lucide-react';
+import FloatingLeaves from '@/components/FloatingLeaves';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -18,19 +20,49 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
 
+  const validateForm = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email)) {
+      setError(t('emailError', { defaultValue: 'A valid email is required.' }));
+      return false;
+    }
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    if (!password || !passwordRegex.test(password)) {
+      setError(t('passwordError', { defaultValue: 'Password must be at least 6 characters and include uppercase, lowercase, number, and special character (e.g., !@#$%).' }));
+      return false;
+    }
+    return true;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     try {
-      const user = await loginUser(email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
       setUser(user);
       navigate('/results', { state: { answers: {} } });
-    } catch (err) {
-      setError(t('loginError', { defaultValue: 'Invalid email or password' }));
+    } catch (err: any) {
+      setError(t('loginError', { defaultValue: "You don't have an account or you have entered invalid credentials." }));
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      setUser(user);
+      navigate('/results', { state: { answers: {} } });
+    } catch (err: any) {
+      setError(t('loginError', { defaultValue: 'Google login failed. Please try again.' }));
     }
   };
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 flex items-center justify-center md:p-6">
+      <FloatingLeaves />
       <div className="w-full mt-24 max-w-5xl mb-[37px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
         <div className="flex flex-col lg:flex-row">
           <div className="lg:w-1/2 relative animate-slideLeft">
@@ -48,7 +80,11 @@ const Login: React.FC = () => {
           </div>
           <div className="w-full lg:w-1/2 p-8 animate-slideRight">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">Log in</h1>
-            {error && <p className="text-red-500 mb-4">{error}</p>}
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg">
+                {error}
+              </div>
+            )}
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="relative">
                 <input
@@ -99,7 +135,10 @@ const Login: React.FC = () => {
             <div className="text-center mt-6">
               <p className="text-gray-600 dark:text-gray-400 mb-4">Log in with</p>
               <div className="flex justify-center space-x-4">
-                <button className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <button
+                  onClick={handleGoogleLogin}
+                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
