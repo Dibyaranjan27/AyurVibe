@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import Results from './pages/Results';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
+import Feedback from './pages/Feedback';
 import AdminDashboard from './pages/AdminDashboard';
 import 'react-toastify/dist/ReactToastify.css';
 import { useState } from 'react'
@@ -33,6 +34,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/feedback" element={<Feedback />} />
             </Routes>
           </main>
           <ToastContainer position="bottom-right" />
