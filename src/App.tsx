@@ -7,9 +7,9 @@ import Quiz from './pages/Quiz';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Results from './pages/Results';
-import Profile from './pages/Profile';
+import ProfileView from './pages/ProfileView';
 import Dashboard from './pages/Dashboard';
-import Feedback from './pages/Feedback';
+import FeedbackView from './pages/FeedbackView';
 import AdminDashboard from './pages/AdminDashboard';
 import 'react-toastify/dist/ReactToastify.css';
 import { useState } from 'react'
@@ -31,10 +31,10 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/results" element={<Results />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile" element={<ProfileView />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/feedback" element={<Feedback />} />
+              <Route path="/feedback" element={<FeedbackView />} />
             </Routes>
           </main>
           <ToastContainer position="bottom-right" />

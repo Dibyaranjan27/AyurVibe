@@ -1,19 +1,19 @@
 import { useContext, useState, useRef, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
+import { db } from '../data/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import DarkModeButton from './DarkModeButton';
 import { useOnClickOutside } from '../hooks/useOnClickOutside';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// --- Icons ---
 import {
   UserCircleIcon,
   ChartBarIcon,
   BellIcon,
   ArrowLeftOnRectangleIcon,
   ChevronDownIcon,
-  Bars3Icon, // Hamburger icon
-  XMarkIcon,  // Close icon
+  Bars3Icon,
+  XMarkIcon,
 } from '@heroicons/react/24/solid';
 
 const Navbar: React.FC = () => {
@@ -23,7 +23,8 @@ const Navbar: React.FC = () => {
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+  const [userName, setUserName] = useState<string>('');
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useOnClickOutside(dropdownRef, () => setIsDropdownOpen(false));
@@ -37,10 +38,25 @@ const Navbar: React.FC = () => {
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
-  
+
   useEffect(() => {
     document.body.style.overflow = isMobileMenuOpen ? 'hidden' : 'auto';
   }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      if (context?.user?.id) {
+        const userDoc = await getDoc(doc(db, 'users', context.user.id));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setUserName(userData.name || context.user.name || 'User');
+        } else {
+          setUserName(context.user.name || 'User');
+        }
+      }
+    };
+    fetchUserName();
+  }, [context?.user]);
 
   if (!context) return null;
   const { user, setUser } = context;
@@ -53,7 +69,7 @@ const Navbar: React.FC = () => {
       navigate('/login');
     }
   };
-  
+
   const NavLink = ({ to, children, onClick }: { to: string; children: React.ReactNode; onClick?: () => void }) => (
     <Link
       to={to}
@@ -85,16 +101,15 @@ const Navbar: React.FC = () => {
             {user ? (
               <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center space-x-2 p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-ayurGreen focus:ring-offset-2 dark:focus:ring-offset-gray-800">
-                  <div className="w-10 h-10 rounded-full bg-ayurGreen flex items-center justify-center text-white font-bold text-lg">{user.name ? user.name[0].toUpperCase() : 'U'}</div>
+                  <div className="w-10 h-10 rounded-full bg-ayurGreen flex items-center justify-center text-white font-bold text-lg">{userName ? userName[0].toUpperCase() : 'U'}</div>
                   <ChevronDownIcon className={`h-5 w-5 text-gray-800 dark:text-white transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 <AnimatePresence>
                   {isDropdownOpen && (
                     <motion.div initial={{ opacity: 0, scale: 0.95, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -10 }} transition={{ duration: 0.2, ease: 'easeOut' }} className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 origin-top-right py-2">
-                      {/* FIXED: Restored the full content of the dropdown menu below */}
                       <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                         <p className="text-sm text-gray-600 dark:text-gray-400">Signed in as</p>
-                        <p className="font-semibold text-gray-800 dark:text-white truncate">{user.name || 'User'}</p>
+                        <p className="font-semibold text-gray-800 dark:text-white truncate">{userName}</p>
                       </div>
                       <div className="py-1">
                         <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
@@ -153,7 +168,6 @@ const Navbar: React.FC = () => {
                 ) : (
                   <>
                     <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full max-w-xs text-center px-4 py-3 text-gray-800 dark:text-white font-medium border-2 border-gray-300 dark:border-gray-600 rounded-full">Login</Link>
-                    {/* FIXED: Corrected button styling */}
                     <Link to="/register" onClick={() => setIsMobileMenuOpen(false)} className="w-full max-w-xs text-center px-4 py-3 text-gray-800 dark:text-white font-medium border-2 border-gray-300 dark:border-gray-600 rounded-full">Register</Link>
                   </>
                 )}

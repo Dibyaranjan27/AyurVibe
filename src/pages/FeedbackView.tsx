@@ -6,7 +6,7 @@ import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
 import { PaperAirplaneIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 
-const Feedback: React.FC = () => {
+const FeedbackView: React.FC = () => {
     const context = useContext(AppContext);
     const { user } = context || {};
 
@@ -61,7 +61,7 @@ const Feedback: React.FC = () => {
     }
     
     return (
-        <div className="relative min-h-screen bg-gray-200 dark:bg-gray-900 flex items-center justify-center p-4 overflow-hidden pt-32 pb-12">
+        <div className="relative min-h-screen bg-gray-200 dark:bg-gray-900 flex items-center justify-center p-4 overflow-hidden pb-20">
             <FloatingLeaves />
             <motion.div 
                 className="relative z-10 w-full max-w-2xl"
@@ -128,4 +128,4 @@ const Feedback: React.FC = () => {
     );
 };
 
-export default Feedback;
+export default FeedbackView;
