@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppContext } from '../context/AppContext';
 import FloatingLeaves from '../components/FloatingLeaves';
@@ -31,11 +31,22 @@ const initialReminders: { id: number; text: string; completed: boolean; dateTime
 const Dashboard: React.FC = () => {
   const context = useContext(AppContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeView, setActiveView] = useState<'dashboard' | 'profile' | 'feedback'>('dashboard');
   const [balanceHistory, setBalanceHistory] = useState(initialBalanceHistory);
   const [streakDays, setStreakDays] = useState(initialStreakDays);
   const [reminders, setReminders] = useState(initialReminders);
   const [activePlanTab, setActivePlanTab] = useState('recommendations');
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const view = params.get('view');
+    if (view === 'profile' || view === 'feedback') {
+      setActiveView(view);
+    } else {
+      setActiveView('dashboard');
+    }
+  }, [location.search]);
 
   if (!context) return <div className="min-h-screen flex items-center justify-center">Loading App...</div>;
   const { user, setUser } = context;

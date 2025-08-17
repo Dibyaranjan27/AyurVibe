@@ -112,7 +112,7 @@ const Navbar: React.FC = () => {
                         <p className="font-semibold text-gray-800 dark:text-white truncate">{userName}</p>
                       </div>
                       <div className="py-1">
-                        <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
+                        <Link to="/dashboard?view=profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
                           <UserCircleIcon className="h-5 w-5 mr-3" /> Profile
                         </Link>
                         <Link to="/dashboard" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
@@ -162,7 +162,7 @@ const Navbar: React.FC = () => {
               <div className="w-full border-t border-gray-200 dark:border-gray-700 pt-8 mt-4 flex flex-col items-center space-y-6">
                 {user ? (
                   <>
-                    <NavLink to="/profile" onClick={() => setIsMobileMenuOpen(false)}>Profile</NavLink>
+                    <NavLink to="/dashboard?view=profile" onClick={() => setIsMobileMenuOpen(false)}>Profile</NavLink>
                     <button onClick={handleLogout} className="text-red-600 dark:text-red-400 font-medium">Logout</button>
                   </>
                 ) : (
