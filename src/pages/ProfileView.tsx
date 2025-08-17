@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import FloatingLeaves from '../components/FloatingLeaves';
 import { UserCircleIcon, EnvelopeIcon, DevicePhoneMobileIcon, SparklesIcon, PencilIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
-const Profile: React.FC = () => {
+const ProfileView: React.FC = () => {
   const context = useContext(AppContext);
   const { t } = useTranslation();
 
@@ -161,4 +161,4 @@ const Profile: React.FC = () => {
   );
 };
 
-export default Profile;
+export default ProfileView;

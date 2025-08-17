@@ -5,7 +5,6 @@ import { AppContext } from '../context/AppContext';
 import Navbar from '../components/Navbar';
 import PageUpButton from '../components/PageUpButton';
 import FloatingLeaves from '../components/FloatingLeaves'; // Corrected path alias if you use it
-import { motion } from 'framer-motion';
 
 const Homepage: React.FC = () => {
   const navigate = useNavigate();

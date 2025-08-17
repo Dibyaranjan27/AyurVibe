@@ -82,9 +82,9 @@ const Results: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen mt-24 bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col items-center p-4 sm:p-8 pt-24 relative overflow-hidden">
+    <div className="min-h-screen bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col items-center p-4 sm:p-8 pt-24 relative overflow-hidden">
       <FloatingLeaves />
-      <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 relative z-10 space-y-16">
+      <div className="max-w-4xl mt-24 w-full mx-auto px-4 sm:px-6 relative z-10 space-y-16">
         
         <motion.div className="text-center" initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }}>
           <p className="text-lg text-gray-600 dark:text-gray-400">Your Primary Dosha is</p>

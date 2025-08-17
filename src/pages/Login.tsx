@@ -1,10 +1,12 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from '../data/firebase'; // Adjust the import path based on your Firebase config
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInAnonymously } from 'firebase/auth';
+import { auth, db } from '../data/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useTranslation } from 'react-i18next';
-import { Mail, Eye, EyeOff, Facebook, Lock } from 'lucide-react';
+import { Mail, Eye, EyeOff, Lock } from 'lucide-react';
+import { UserCircleIcon } from '@heroicons/react/24/solid';
 import FloatingLeaves from '@/components/FloatingLeaves';
 
 const Login: React.FC = () => {
@@ -13,12 +15,15 @@ const Login: React.FC = () => {
   const context = useContext(AppContext);
 
   if (!context) return null;
-  const { setUser } = context;
+  const { setUser, theme } = context;
 
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isAnonymousLoading, setIsAnonymousLoading] = useState(false);
 
   const validateForm = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -38,25 +43,69 @@ const Login: React.FC = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    setIsLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      setUser(user);
-      navigate('/results', { state: { answers: {} } });
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUser({ id: user.uid, name: userData.name || user.displayName || '', email: userData.email || user.email || '', prakriti: userData.prakriti || null, mobile: userData.mobile || '' });
+      } else {
+        setError('User data not found. Please register.');
+        return;
+      }
+      navigate(`/?theme=${theme}`);
     } catch (err: any) {
       setError(t('loginError', { defaultValue: "You don't have an account or you have entered invalid credentials." }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      setUser(user);
-      navigate('/results', { state: { answers: {} } });
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, 'users', user.uid), {
+          name: user.displayName || '',
+          email: user.email || '',
+          createdAt: new Date().toISOString(),
+        }, { merge: true });
+      }
+      const userData = (await getDoc(doc(db, 'users', user.uid))).data();
+      setUser({ id: user.uid, name: userData?.name || user.displayName || '', email: userData?.email || user.email || '', prakriti: userData?.prakriti || null, mobile: userData?.mobile || '' });
+      navigate(`/?theme=${theme}`);
     } catch (err: any) {
       setError(t('loginError', { defaultValue: 'Google login failed. Please try again.' }));
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
+  const handleAnonymousLogin = async () => {
+    setIsAnonymousLoading(true);
+    try {
+      const result = await signInAnonymously(auth);
+      const user = result.user;
+
+      await setDoc(doc(db, 'users', user.uid), {
+        name: 'Anonymous User',
+        email: '',
+        createdAt: new Date().toISOString(),
+        isAnonymous: true,
+      }, { merge: true });
+
+      setUser({ id: user.uid, name: 'Anonymous User', email: '', prakriti: null, mobile: '' });
+      navigate(`/?theme=${theme}`);
+    } catch (err: any) {
+      setError(t('anonymousError', { defaultValue: 'Anonymous login failed. Please try again.' }));
+    } finally {
+      setIsAnonymousLoading(false);
     }
   };
 
@@ -93,6 +142,7 @@ const Login: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email or Phone Number"
                   className="w-full pl-10 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-ayurGreen dark:focus:border-ayurGreen/70 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  disabled={isLoading}
                 />
                 <Mail className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
               </div>
@@ -103,12 +153,14 @@ const Login: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
                   className="w-full pl-10 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-ayurGreen dark:focus:border-ayurGreen/70 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  disabled={isLoading}
                 />
                 <Lock className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
                 <button 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-3.5 text-gray-400"
+                  disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -118,18 +170,30 @@ const Login: React.FC = () => {
                   <input
                     type="checkbox"
                     className="w-4 h-4 text-ayurGreen"
+                    disabled={isLoading}
                   />
                   <span className="text-sm text-gray-600 dark:text-gray-400">remember me</span>
                 </label>
-                <button className="text-sm text-ayurGreen hover:underline">
+                <button className="text-sm text-ayurGreen hover:underline" disabled={isLoading}>
                   Forgot Password?
                 </button>
               </div>
               <button
                 type="submit"
-                className="w-full p-3 bg-gradient-to-r from-ayurGreen to-green-400 text-white rounded-full hover:opacity-90 transition-all"
+                className="w-full p-3 bg-gradient-to-r from-ayurGreen to-green-400 text-white rounded-full hover:opacity-90 transition-all flex items-center justify-center"
+                disabled={isLoading}
               >
-                Log in
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" />
+                    </svg>
+                    Logging in...
+                  </>
+                ) : (
+                  'Log in'
+                )}
               </button>
             </form>
             <div className="text-center mt-6">
@@ -137,24 +201,43 @@ const Login: React.FC = () => {
               <div className="flex justify-center space-x-4">
                 <button
                   onClick={handleGoogleLogin}
-                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center justify-center"
+                  disabled={isGoogleLoading}
                 >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                  </svg>
+                  {isGoogleLoading ? (
+                    <svg className="animate-spin h-5 w-5 text-gray-500" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.20-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                    </svg>
+                  )}
                 </button>
-                <button className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                  <Facebook className="w-5 h-5 text-[#3b5998]" />
+                <button
+                  onClick={handleAnonymousLogin}
+                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center justify-center"
+                  disabled={isAnonymousLoading}
+                >
+                  {isAnonymousLoading ? (
+                    <svg className="animate-spin h-5 w-5 text-gray-500" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" />
+                    </svg>
+                  ) : (
+                    <UserCircleIcon className="w-5 h-5 text-gray-500" />
+                  )}
                 </button>
               </div>
             </div>
             <div className="text-center mt-4">
               <p className="text-gray-600 dark:text-gray-400">
                 Don’t have an account?{' '}
-                <a href="/register" className="text-ayurGreen hover:underline font-medium">
+                <a href={`/register?theme=${theme}`} className="text-ayurGreen hover:underline font-medium">
                   Register Now
                 </a>
               </p>

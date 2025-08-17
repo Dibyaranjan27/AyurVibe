@@ -1,9 +1,22 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'firebase/firestore';
-import { User, HealthDetails } from '../types';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, Timestamp } from 'firebase/firestore';
 
-// Firebase configuration (replace with your Firebase project config)
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  prakriti: string | null;
+  mobile: string;
+  balanceHistory?: { date: string; score: number }[];
+  streakDays?: string[];
+  reminders?: { id: number; text: string; completed: boolean; dateTime: Date | null }[];
+}
+
+export interface HealthDetails {
+  // Define health details structure as needed
+  [key: string]: any;
+}
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -17,7 +30,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export { doc, getDoc };
+export { doc, getDoc, setDoc, collection, getDocs, Timestamp, signInWithPopup, GoogleAuthProvider };
 
 // Authentication functions
 export const registerUser = async (email: string, password: string, name: string): Promise<User> => {
