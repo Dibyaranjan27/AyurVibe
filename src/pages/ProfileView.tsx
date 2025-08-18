@@ -127,7 +127,7 @@ const ProfileView: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Header: Avatar, Name, Email */}
+        {/* Header: Avatar, Name, Email, Edit Profile Button */}
         <div className="bg-gradient-to-br from-ayurGreen/20 to-ayurSaffron/20 dark:from-gray-700/50 dark:to-gray-800/50 rounded-2xl shadow-xl p-6 sm:p-8 mb-6 flex flex-col items-center text-center">
           <div className="relative mb-4">
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-ayurGreen flex items-center justify-center text-white text-3xl sm:text-4xl font-bold ring-4 ring-white/50 dark:ring-gray-800/50 shadow-lg">
@@ -140,6 +140,15 @@ const ProfileView: React.FC = () => {
           </div>
           <h2 className="text-xl sm:text-2xl font-lora font-bold text-gray-800 dark:text-gray-200">{user.name}</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{user.email}</p>
+          {!editMode && (
+            <button 
+              type="button" 
+              onClick={() => setEditMode(true)} 
+              className="mt-4 flex items-center justify-center gap-2 bg-ayurGreen text-white px-6 py-2 rounded-full font-bold hover:bg-ayurGreen/80 transition-all shadow-md hover:shadow-lg"
+            >
+              <PencilIcon className="w-5 h-5" /> {t('editProfile', { defaultValue: 'Edit Profile' })}
+            </button>
+          )}
         </div>
 
         {/* Cards: Personal Information, Health Details, Quiz Results */}
@@ -163,7 +172,7 @@ const ProfileView: React.FC = () => {
             </div>
 
             {/* Health Details Card */}
-            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
+            <div className={`flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6`}>
               <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('healthDetails', { defaultValue: 'Health Details' })}</h4>
               {editMode ? (
                 <div className="space-y-4">
@@ -178,21 +187,15 @@ const ProfileView: React.FC = () => {
                   <InfoRow icon={<FaceSmileIcon className="w-5 h-5" />} label={t('hair', { defaultValue: 'Hair' })} value={healthDetails.hair} />
                 </div>
               )}
-              <button
-                type="button"
-                onClick={() => setShowMoreHealth(!showMoreHealth)}
-                className="mt-4 flex items-center justify-center gap-2 text-ayurGreen dark:text-ayurBeige hover:text-ayurGreen/80 dark:hover:text-ayurBeige/80 font-medium transition-colors"
-              >
-                {showMoreHealth ? (
-                  <>
-                    <ChevronUpIcon className="w-5 h-5" /> {t('showLess', { defaultValue: 'Show Less' })}
-                  </>
-                ) : (
-                  <>
-                    <ChevronDownIcon className="w-5 h-5" /> {t('showMore', { defaultValue: 'Show More' })}
-                  </>
-                )}
-              </button>
+              {!showMoreHealth && (
+                <button
+                  type="button"
+                  onClick={() => setShowMoreHealth(true)}
+                  className="mt-4 flex items-center justify-center gap-2 text-ayurGreen dark:text-ayurBeige hover:text-ayurGreen/80 dark:hover:text-ayurBeige/80 font-medium transition-colors"
+                >
+                  <ChevronDownIcon className="w-5 h-5" /> {t('showMore', { defaultValue: 'Show More' })}
+                </button>
+              )}
             </div>
 
             {/* Quiz Results Card */}
@@ -202,11 +205,9 @@ const ProfileView: React.FC = () => {
             </div>
           </div>
 
-          {/* Expanded Health Details Section */}
           {showMoreHealth && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 mb-6">
-              <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('additionalHealthDetails', { defaultValue: 'Additional Health Details' })}</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 mb-12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 pl-8">
                 {editMode ? (
                   <>
                     <EditableField label={t('eyes', { defaultValue: 'Eyes' })} value={healthDetails.eyes} onChange={(e) => setHealthDetails({ ...healthDetails, eyes: e.target.value })} />
@@ -239,37 +240,36 @@ const ProfileView: React.FC = () => {
                   </>
                 )}
               </div>
+              <div className="mt-4 flex justify-center mb-6">
+                <button
+                  type="button"
+                  onClick={() => setShowMoreHealth(false)}
+                  className="flex items-center gap-2 text-ayurGreen dark:text-ayurBeige hover:text-ayurGreen/80 dark:hover:text-ayurBeige/80 font-medium transition-colors"
+                >
+                  <ChevronUpIcon className="w-5 h-5" /> {t('showLess', { defaultValue: 'Show Less' })}
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {editMode ? (
-              <>
-                <button 
-                  type="submit" 
-                  className="w-full sm:w-40 flex items-center justify-center gap-2 bg-ayurGreen text-white px-6 py-3 rounded-full font-bold hover:bg-ayurGreen/80 transition-all shadow-md hover:shadow-lg"
-                >
-                  <CheckCircleIcon className="w-5 h-5" /> {t('saveChanges', { defaultValue: 'Save Changes' })}
-                </button>
-                <button 
-                  type="button" 
-                  onClick={handleCancel} 
-                  className="w-full sm:w-40 flex items-center justify-center gap-2 bg-ayurSaffron text-white px-6 py-3 rounded-full font-bold hover:bg-ayurSaffron/80 transition-all shadow-md hover:shadow-lg"
-                >
-                  <XCircleIcon className="w-5 h-5" /> {t('cancel', { defaultValue: 'Cancel' })}
-                </button>
-              </>
-            ) : (
+          {/* Action Buttons (Save/Cancel) */}
+          {editMode && (
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+              <button 
+                type="submit" 
+                className="w-full sm:w-52 flex items-center justify-center gap-2 bg-ayurGreen text-white px-6 py-3 rounded-full font-bold hover:bg-ayurGreen/80 transition-all shadow-md hover:shadow-lg"
+              >
+                <CheckCircleIcon className="w-5 h-5" /> {t('saveChanges', { defaultValue: 'Save Changes' })}
+              </button>
               <button 
                 type="button" 
-                onClick={() => setEditMode(true)} 
-                className="w-full sm:w-40 flex items-center justify-center gap-2 bg-ayurGreen text-white px-6 py-3 rounded-full font-bold hover:bg-ayurGreen/80 transition-all shadow-md hover:shadow-lg"
+                onClick={handleCancel} 
+                className="w-full sm:w-52 flex items-center justify-center gap-2 bg-ayurSaffron text-white px-6 py-3 rounded-full font-bold hover:bg-ayurSaffron/80 transition-all shadow-md hover:shadow-lg"
               >
-                <PencilIcon className="w-5 h-5" /> {t('editProfile', { defaultValue: 'Edit Profile' })}
+                <XCircleIcon className="w-5 h-5" /> {t('cancel', { defaultValue: 'Cancel' })}
               </button>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Status Message */}
           {statusMessage && (
