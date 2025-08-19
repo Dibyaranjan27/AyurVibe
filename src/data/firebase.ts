@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, Timestamp } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, Timestamp, updateDoc } from 'firebase/firestore'; // Added updateDoc
 
 export interface User {
   id: string;
@@ -14,7 +14,6 @@ export interface User {
 }
 
 export interface HealthDetails {
-  // Define health details structure as needed
   [key: string]: any;
 }
 
@@ -30,7 +29,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export { doc, getDoc, setDoc, collection, getDocs, Timestamp, signInWithPopup, GoogleAuthProvider };
+export { doc, getDoc, setDoc, updateDoc, collection, getDocs, Timestamp, signInWithPopup, GoogleAuthProvider }; // Added updateDoc to exports
 
 // Authentication functions
 export const registerUser = async (email: string, password: string, name: string): Promise<User> => {
@@ -69,4 +68,9 @@ export const saveQuizAnswers = async (userId: string, answers: Record<number, st
 export const getAllUsers = async (): Promise<User[]> => {
   const querySnapshot = await getDocs(collection(db, 'users'));
   return querySnapshot.docs.map(doc => doc.data() as User);
+};
+
+// New function to update user prakriti plan
+export const updatePrakritiPlan = async (userId: string, prakriti: string): Promise<void> => {
+  await setDoc(doc(db, 'users', userId), { prakriti }, { merge: true });
 };

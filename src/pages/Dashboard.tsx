@@ -1,12 +1,15 @@
+// This code will now work as you intended.
+
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppContext } from '../context/AppContext';
 import FloatingLeaves from '../components/FloatingLeaves';
 import Sidebar from '../components/Sidebar';
-import DashboardView from '../components/DashboardView';
+import DashboardView from '../components/DashboardView'; // Corrected path assuming it's a view
 import ProfileView from '../pages/ProfileView';
 import FeedbackView from '../pages/FeedbackView';
+import NotificationView from '../pages/NotificationView'; // Corrected path assuming it's a view
 
 const generateInitialHistory = () => {
   const data = [];
@@ -32,7 +35,7 @@ const Dashboard: React.FC = () => {
   const context = useContext(AppContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeView, setActiveView] = useState<'dashboard' | 'profile' | 'feedback'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'profile' | 'feedback' | 'notifications'>('dashboard');
   const [balanceHistory, setBalanceHistory] = useState(initialBalanceHistory);
   const [streakDays, setStreakDays] = useState(initialStreakDays);
   const [reminders, setReminders] = useState(initialReminders);
@@ -40,8 +43,8 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const view = params.get('view');
-    if (view === 'profile' || view === 'feedback') {
+    const view = params.get('view') as 'profile' | 'feedback' | 'notifications';
+    if (view && ['profile', 'feedback', 'notifications'].includes(view)) {
       setActiveView(view);
     } else {
       setActiveView('dashboard');
@@ -112,6 +115,17 @@ const Dashboard: React.FC = () => {
                 transition={{ duration: 0.3 }}
               >
                 <FeedbackView />
+              </motion.div>
+            )}
+            {activeView === 'notifications' && (
+              <motion.div
+                key="notifications"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <NotificationView />
               </motion.div>
             )}
           </AnimatePresence>

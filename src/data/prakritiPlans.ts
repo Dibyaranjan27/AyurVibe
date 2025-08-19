@@ -111,6 +111,7 @@ export const prakritiPlans: Record<string, Plan> = {
         { time: '6:30 AM', activity: 'Wake & Meditate', description: 'Start with 10 minutes of mindfulness to calm both doshas.' },
         { time: '8:00 AM', activity: 'Substantial Breakfast', description: 'Have a nourishing breakfast like oatmeal with sweet spices.' },
         { time: '12:30 PM', activity: 'Main Meal', description: 'Eat a well-balanced lunch, avoiding extreme flavors.' },
+        { time: '10:00 PM', activity: 'Bedtime', description: 'Wind down with a calming routine to balance both doshas.' },
       ],
   },
   'Pitta-Vata': {
@@ -127,6 +128,7 @@ export const prakritiPlans: Record<string, Plan> = {
         { time: '6:00 AM', activity: 'Gentle Awakening', description: 'Wake gently and drink room temperature water.' },
         { time: '8:00 AM', activity: 'Calm Breakfast', description: 'Eat a calming, substantial breakfast in a peaceful environment.' },
         { time: '12:00 PM', activity: 'Main Meal', description: 'Eat your main meal consistently around noon.' },
+        { time: '10:30 PM', activity: 'Bedtime', description: 'Relax with a cooling activity like reading or a gentle stretch.' },
       ],
   },
     'Pitta-Kapha': {
@@ -143,6 +145,7 @@ export const prakritiPlans: Record<string, Plan> = {
         { time: '6:00 AM', activity: 'Active Start', description: 'Wake early and start with stimulating exercise like a brisk walk or jog.' },
         { time: '12:30 PM', activity: 'Satisfying Lunch', description: 'Have your largest meal, focusing on well-spiced, easy-to-digest foods.' },
         { time: '7:00 PM', activity: 'Light Dinner', description: 'Keep the evening meal very light, such as a hearty vegetable soup.' },
+        { time: '9:30 PM', activity: 'Relaxation', description: 'Engage in a calming activity to balance Pitta before bed.' },
       ],
   },
   'Kapha-Pitta': {
@@ -159,6 +162,7 @@ export const prakritiPlans: Record<string, Plan> = {
         { time: '5:30 AM', activity: 'Vigorous Wake-Up', description: 'Wake before sunrise and get your body moving immediately.' },
         { time: '1:00 PM', activity: 'Main Meal', description: 'Eat a well-spiced, warm lunch to fuel your metabolism.' },
         { time: '6:30 PM', activity: 'Lightest Meal', description: 'Dinner should be minimal to allow for proper digestion overnight.' },
+        { time: '9:00 PM', activity: 'Wind Down', description: 'Relax with a light stretching routine to cool Pitta.' },
       ],
   },
   'Vata-Kapha': {
@@ -175,6 +179,7 @@ export const prakritiPlans: Record<string, Plan> = {
         { time: '6:30 AM', activity: 'Warm Water & Movement', description: 'Start with warm lemon water, followed by gentle, warming yoga.' },
         { time: '8:30 AM', activity: 'Warm, Light Breakfast', description: 'A small bowl of cooked spiced oatmeal or quinoa porridge.' },
         { time: '12:30 PM', activity: 'Main Meal', description: 'Enjoy a well-cooked, well-spiced lunch like kitchari.' },
+        { time: '9:30 PM', activity: 'Restful Bedtime', description: 'Wind down with a warm herbal tea and relaxation.' },
       ],
   },
   'Kapha-Vata': {
@@ -191,6 +196,7 @@ export const prakritiPlans: Record<string, Plan> = {
         { time: '6:00 AM', activity: 'Active Start', description: 'Wake early and do some invigorating exercise to get the blood flowing.' },
         { time: '9:00 AM', activity: 'Light Breakfast', description: 'A light breakfast of stewed apples or a small bowl of barley.' },
         { time: '1:00 PM', activity: 'Warm, Spiced Lunch', description: 'This should be your most substantial meal of the day.' },
+        { time: '9:00 PM', activity: 'Evening Relaxation', description: 'End with a warm bath or light stretching to calm Vata.' },
       ],
   },
   'Tridoshic': {
@@ -210,6 +216,7 @@ export const prakritiPlans: Record<string, Plan> = {
       { time: '6:00 AM', activity: 'Wake with the Sun', description: 'Align your sleep cycle with nature\'s rhythm.' },
       { time: '7:30 AM', activity: 'Moderate Exercise', description: 'Choose exercise based on the season: calming in summer, warming in winter.' },
       { time: '12:30 PM', activity: 'Balanced Lunch', description: 'Eat a wholesome meal that includes all six tastes if possible.' },
+      { time: '10:00 PM', activity: 'Restful Sleep', description: 'Prepare for a restful night with a light wind-down routine.' },
     ],
   },
 };

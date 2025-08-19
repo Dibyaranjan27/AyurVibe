@@ -44,18 +44,42 @@ const ProfileView: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       if (user.id) {
-        const userDoc = await getDoc(doc(db, 'users', user.id));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setName(userData.name || '');
-          setMobile(userData.mobile || '');
-          setHealthDetails(userData.healthDetails || {});
-          setPrakriti(userData.prakriti || '-');
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.id));
+          if (userDoc.exists()) {
+            const userData = userDoc.data() as any;
+            setName(userData.name || '');
+            setMobile(userData.mobile || '');
+            // Fetch quiz answers and map to healthDetails
+            const quizAnswers = userData.quizAnswers || {};
+            const mappedHealthDetails = {
+              bodyFrame: quizAnswers['1']?.text || quizAnswers['Body Frame']?.text || '',
+              skin: quizAnswers['2']?.text || quizAnswers['Skin']?.text || '',
+              hair: quizAnswers['3']?.text || quizAnswers['Hair']?.text || '',
+              eyes: quizAnswers['4']?.text || quizAnswers['Eyes']?.text || '',
+              appetite: quizAnswers['5']?.text || quizAnswers['Appetite']?.text || '',
+              sleep: quizAnswers['6']?.text || quizAnswers['Sleep']?.text || '',
+              energy: quizAnswers['7']?.text || quizAnswers['Energy']?.text || '',
+              climate: quizAnswers['8']?.text || quizAnswers['Climate Preference']?.text || '',
+              stress: quizAnswers['9']?.text || quizAnswers['Stress Response']?.text || '',
+              memory: quizAnswers['10']?.text || quizAnswers['Memory']?.text || '',
+              pace: quizAnswers['11']?.text || quizAnswers['Activity Pace']?.text || '',
+              mood: quizAnswers['12']?.text || quizAnswers['Mood']?.text || '',
+              money: quizAnswers['13']?.text || quizAnswers['Money Handling']?.text || '',
+              communication: quizAnswers['14']?.text || quizAnswers['Communication Style']?.text || '',
+              change: quizAnswers['15']?.text || quizAnswers['Response to Change']?.text || '',
+            };
+            setHealthDetails(mappedHealthDetails);
+            setPrakriti(userData.prakriti || '-');
+            setUser({ ...user, name: userData.name, mobile: userData.mobile, healthDetails: mappedHealthDetails, prakriti: userData.prakriti });
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
         }
       }
     };
     fetchUserData();
-  }, [user.id]);
+  }, [user.id, setUser]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,7 +179,7 @@ const ProfileView: React.FC = () => {
         <form onSubmit={handleSave}>
           <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 mb-6">
             {/* Personal Information Card */}
-            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
+            <div className="flex-1 mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
               <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('personalInformation', { defaultValue: 'Personal Information' })}</h4>
               {editMode ? (
                 <div className="space-y-4">
@@ -172,7 +196,7 @@ const ProfileView: React.FC = () => {
             </div>
 
             {/* Health Details Card */}
-            <div className={`flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6`}>
+            <div className={`flex-1 bg-white mb-8 dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6`}>
               <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('healthDetails', { defaultValue: 'Health Details' })}</h4>
               {editMode ? (
                 <div className="space-y-4">
@@ -199,14 +223,14 @@ const ProfileView: React.FC = () => {
             </div>
 
             {/* Quiz Results Card */}
-            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
+            <div className="flex-1 mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
               <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('quizResults', { defaultValue: 'Quiz Results' })}</h4>
               <InfoRow icon={<SparklesIcon className="w-5 h-5" />} label={t('yourPrakriti', { defaultValue: 'Your Prakriti' })} value={prakriti} />
             </div>
           </div>
 
           {showMoreHealth && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 mb-12">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mt-[-2rem] sm:p-6 mb-12">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 pl-8">
                 {editMode ? (
                   <>

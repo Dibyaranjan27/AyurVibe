@@ -116,7 +116,7 @@ const Login: React.FC = () => {
         <div className="flex flex-col lg:flex-row">
           <div className="lg:w-1/2 relative animate-slideLeft">
             <img 
-              src="src/assets/leo-rivas-YJIEv6Gb0rI-unsplash.jpg"
+              src="src/assets/leaves_background.jpg"
               alt="Ayurveda"
               className="w-full h-full object-cover"
             />
