@@ -15,12 +15,15 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useState } from 'react'
 import './App.css'
 import Footer from './components/Footer';
+import { NotificationsProvider } from './context/NotificationsProvider';
+import NotificationView from './pages/NotificationView';
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
     <AppProvider>
+      <NotificationsProvider> 
       <Router>
         <div className="min-h-screen bg-secondary dark:bg-dark-primary">
           <Navbar />
@@ -35,12 +38,14 @@ function App() {
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/feedback" element={<FeedbackView />} />
+              <Route path="/notifications" element={<NotificationView />} />
             </Routes>
           </main>
           <ToastContainer position="bottom-right" />
           <Footer />
         </div>
       </Router>
+      </NotificationsProvider>
     </AppProvider>
   )
 }
