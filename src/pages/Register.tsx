@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { registerUser } from '../utils/authUtils';
 import { validateEmail, validatePassword, validateConfirmPassword, validateName } from '../utils/validationUtils';
@@ -42,7 +42,8 @@ const Register: React.FC = () => {
       return false;
     }
     if (!validatePassword(password)) {
-      setError(t('passwordError.length', { defaultValue: 'Password must be at least 6 characters long.' }));
+      // Assuming validatePassword returns a specific error message or a generic boolean
+      setError(t('passwordError.generic', { defaultValue: 'Password does not meet the requirements.' }));
       return false;
     }
     if (!validateConfirmPassword(password, confirmPassword)) {
@@ -68,7 +69,7 @@ const Register: React.FC = () => {
           setError(t('registerError.emailInUse', { defaultValue: 'This email address is already in use.' }));
           break;
         case 'auth/weak-password':
-          setError(t('registerError.weakPassword', { defaultValue: 'The password is too weak. Please choose a stronger password.' }));
+          setError(t('registerError.weakPassword', { defaultValue: 'The password is too weak.' }));
           break;
         case 'auth/invalid-email':
           setError(t('registerError.invalidEmail', { defaultValue: 'The email address is not valid.' }));
@@ -139,13 +140,16 @@ const Register: React.FC = () => {
           disabled={isLoading}
           maxLength={128}
         />
+
+        {/* CHANGE: "Register" text is now nested as a child, and redundant onClick is removed. */}
         <AuthButton
-          onClick={handleRegister}
-          children="Register"
           type="submit"
           disabled={isLoading}
           loading={isLoading}
-        />
+        >
+          Register
+        </AuthButton>
+
       </form>
     </AuthLayout>
   );
