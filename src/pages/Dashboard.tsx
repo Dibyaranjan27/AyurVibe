@@ -1,45 +1,40 @@
-// This code will now work as you intended.
-
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppContext } from '../context/AppContext';
+import { db } from '../data/firebase'; // Ensure you have this import
+import { doc, getDoc } from 'firebase/firestore'; // Ensure you have these imports
 import FloatingLeaves from '../components/FloatingLeaves';
 import Sidebar from '../components/Sidebar';
-import DashboardView from '../components/DashboardView'; // Corrected path assuming it's a view
+import DashboardView from '../components/DashboardView';
 import ProfileView from '../pages/ProfileView';
 import FeedbackView from '../pages/FeedbackView';
-import NotificationView from '../pages/NotificationView'; // Corrected path assuming it's a view
+import NotificationView from '../pages/NotificationView';
 
-const generateInitialHistory = () => {
-  const data = [];
-  for (let i = 29; i >= 0; i--) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    data.push({
-      date: date.toISOString().split('T')[0],
-      score: 60 + Math.floor(Math.random() * 25),
-    });
-  }
-  return data;
+// Define the Reminder type for better state management
+type Reminder = { 
+  id: number; 
+  text: string; 
+  completed: boolean; 
+  dateTime: Date | null 
 };
-
-const initialBalanceHistory = generateInitialHistory();
-const initialStreakDays = [new Date(Date.now() - 86400000 * 2), new Date(Date.now() - 86400000)];
-const initialReminders: { id: number; text: string; completed: boolean; dateTime: Date | null }[] = [
-  { id: 1, text: 'Drink warm ginger tea', completed: true, dateTime: null },
-  { id: 2, text: '10-minute evening meditation', completed: false, dateTime: new Date(new Date().setHours(21, 0, 0, 0)) },
-];
 
 const Dashboard: React.FC = () => {
   const context = useContext(AppContext);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // --- Hooks are at the top ---
   const [activeView, setActiveView] = useState<'dashboard' | 'profile' | 'feedback' | 'notifications'>('dashboard');
-  const [balanceHistory, setBalanceHistory] = useState(initialBalanceHistory);
-  const [streakDays, setStreakDays] = useState(initialStreakDays);
-  const [reminders, setReminders] = useState(initialReminders);
+  
+  // CHANGE: State is now initialized as empty. Data will be fetched from Firebase.
+  const [balanceHistory, setBalanceHistory] = useState<{ date: string; score: number }[]>([]);
+  const [streakDays, setStreakDays] = useState<Date[]>([]);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
   const [activePlanTab, setActivePlanTab] = useState('recommendations');
+  const [isLoading, setIsLoading] = useState(true); // State to handle loading
+  
+  const { user, setUser } = context || {};
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -51,37 +46,74 @@ const Dashboard: React.FC = () => {
     }
   }, [location.search]);
 
-  if (!context) return <div className="min-h-screen flex items-center justify-center">Loading App...</div>;
-  const { user, setUser } = context;
-
+  // This useEffect redirects if the user is not logged in
   useEffect(() => {
-    if (!user) {
+    if (context && !user) {
       navigate('/login', { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, context]);
 
-  if (!user) return <div className="min-h-screen flex items-center justify-center bg-gray-200 dark:bg-gray-900">Loading User...</div>;
+  // CHANGE: New useEffect to fetch all user data from Firestore
+  useEffect(() => {
+    const fetchData = async () => {
+      if (user?.id) {
+        setIsLoading(true);
+        const userDocRef = doc(db, 'users', user.id);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists()) {
+          const data = userDocSnap.data();
+          // Set balance history
+          setBalanceHistory(data.balanceHistory || []);
+
+          // Set streak days, converting Firebase Timestamps to JS Dates
+          const streakData = data.streakDays || [];
+          setStreakDays(streakData.map((d: any) => new Date(d.seconds * 1000)));
+
+          // Set reminders, converting Firebase Timestamps to JS Dates
+          const reminderData = data.reminders || [];
+          setReminders(reminderData.map((r: any) => ({
+            ...r,
+            dateTime: r.dateTime ? new Date(r.dateTime.seconds * 1000) : null,
+          })));
+        }
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user?.id]);
+
+  // --- Conditional returns are now AFTER all hooks ---
+  if (!context) {
+    return <div className="min-h-screen flex items-center justify-center">Loading App...</div>;
+  }
+
+  if (!user) {
+    return <div className="min-h-screen flex items-center justify-center bg-gray-200 dark:bg-gray-900">Redirecting to login...</div>;
+  }
 
   const handleLogout = () => {
-    setUser(null);
+    if (setUser) {
+      setUser(null);
+    }
     navigate('/login');
   };
+  
+  // Display a loading screen while fetching data from Firestore
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center bg-gray-200 dark:bg-gray-900 text-gray-800 dark:text-white">Loading Your Dashboard...</div>;
+  }
 
   return (
     <div className="relative h-screen bg-gray-200 dark:bg-gray-900 overflow-hidden font-openSans">
       <FloatingLeaves />
-      <div className="relative z-10 flex h-full mt-24">
+      <div className="relative mt-24 z-10 flex h-full">
         <Sidebar user={user} activeView={activeView} setActiveView={setActiveView} handleLogout={handleLogout} />
-        <main className="flex-1 p-6 sm:p-10 overflow-y-auto">
+        <main className="flex-1 p-6 sm:p-10 overflow-y-auto scrollbar-thin scrollbar-thumb-ayurGreen scrollbar-track-gray-100 dark:scrollbar-thumb-ayurBeige dark:scrollbar-track-gray-800">
           <AnimatePresence mode="wait">
             {activeView === 'dashboard' && (
-              <motion.div
-                key="dashboard"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3 }}
-              >
+              <motion.div key="dashboard" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}>
                 <DashboardView
                   user={user}
                   balanceHistory={balanceHistory}
@@ -96,35 +128,17 @@ const Dashboard: React.FC = () => {
               </motion.div>
             )}
             {activeView === 'profile' && (
-              <motion.div
-                key="profile"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3 }}
-              >
+              <motion.div key="profile" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}>
                 <ProfileView />
               </motion.div>
             )}
             {activeView === 'feedback' && (
-              <motion.div
-                key="feedback"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3 }}
-              >
+              <motion.div key="feedback" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}>
                 <FeedbackView />
               </motion.div>
             )}
             {activeView === 'notifications' && (
-              <motion.div
-                key="notifications"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3 }}
-              >
+              <motion.div key="notifications" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}>
                 <NotificationView />
               </motion.div>
             )}
