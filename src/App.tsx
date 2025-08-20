@@ -12,14 +12,11 @@ import Dashboard from './pages/Dashboard';
 import FeedbackView from './pages/FeedbackView';
 import AdminDashboard from './pages/AdminDashboard';
 import 'react-toastify/dist/ReactToastify.css';
-import { useState } from 'react'
-import './App.css'
 import Footer from './components/Footer';
 import { NotificationsProvider } from './context/NotificationsProvider';
 import NotificationView from './pages/NotificationView';
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <AppProvider>

@@ -15,6 +15,65 @@ import pittaImage from '../assets/pitta.png';
 import kaphaImage from '../assets/kapha.png';
 import { db, updateDoc, doc } from '../data/firebase';
 
+// CHANGE: Data processing logic is now in its own helper function outside of the useEffect hook.
+const processQuizData = async (
+    quizAnswers: Record<number, { dosha: string; text: string }>,
+    guestPrakriti: string | null,
+    user: any // Replace with a more specific user type if available
+) => {
+    const doshaCounts = { Vata: 0, Pitta: 0, Kapha: 0 };
+    const traits: Record<string, string[]> = { Vata: [], Pitta: [], Kapha: [], Other: [] };
+    const healthDetailsUpdate: Record<string, string> = {};
+    const fieldMapping: Record<string, string> = {
+        "Body Frame": "bodyFrame", "Skin": "skin", "Hair": "hair", "Eyes": "eyes",
+        "Appetite": "appetite", "Sleep": "sleep", "Energy": "energy", "Climate Preference": "climate",
+        "Stress Response": "stress", "Memory": "memory", "Activity Pace": "pace", "Mood": "mood",
+        "Money Handling": "money", "Communication Style": "communication", "Response to Change": "change",
+    };
+
+    Object.entries(quizAnswers).forEach(([idStr, answer]) => {
+        const question = questions.find(q => q.id === parseInt(idStr));
+        if (question) {
+            const traitText = `${question.text}: ${answer.text}`;
+            if (answer.dosha !== 'Other') {
+                doshaCounts[answer.dosha as 'Vata' | 'Pitta' | 'Kapha']++;
+                traits[answer.dosha].push(traitText);
+            } else {
+                traits['Other'].push(traitText);
+            }
+            if (fieldMapping[question.text]) {
+                healthDetailsUpdate[fieldMapping[question.text]] = answer.text;
+            }
+        }
+    });
+
+    const totalDoshaAnswers = Object.values(doshaCounts).reduce((sum, count) => sum + count, 0);
+    const percentages = {
+        Vata: totalDoshaAnswers > 0 ? Math.round((doshaCounts.Vata / totalDoshaAnswers) * 100) : 0,
+        Pitta: totalDoshaAnswers > 0 ? Math.round((doshaCounts.Pitta / totalDoshaAnswers) * 100) : 0,
+        Kapha: totalDoshaAnswers > 0 ? Math.round((doshaCounts.Kapha / totalDoshaAnswers) * 100) : 0,
+    };
+
+    const sortedDoshas = Object.keys(doshaCounts).sort((a, b) => doshaCounts[b as keyof typeof doshaCounts] - doshaCounts[a as keyof typeof doshaCounts]);
+    const primary = sortedDoshas[0] || 'Balanced';
+    const finalPrakriti = guestPrakriti || `${primary}-${sortedDoshas[1] || 'Balanced'}`;
+
+    if (user?.id && !guestPrakriti) {
+        await updateDoc(doc(db, 'users', user.id), {
+            prakriti: finalPrakriti,
+            healthDetails: {
+                ...user.healthDetails,
+                ...healthDetailsUpdate
+            }
+        });
+    }
+
+    const plan = prakritiPlans[finalPrakriti] || prakritiPlans['Tridoshic'];
+
+    return { percentages, traits, primary, finalPrakriti, plan };
+};
+
+
 const Results: React.FC = () => {
   const context = useContext(AppContext);
   const { t } = useTranslation();
@@ -31,88 +90,45 @@ const Results: React.FC = () => {
 
   const { user } = context || {};
 
+  // CHANGE: The useEffect hook is now much simpler.
   useEffect(() => {
-    let quizAnswers: Record<number, { dosha: string, text: string }> | null = null;
-    let guestPrakriti: string | null = null;
+    const loadResults = async () => {
+        let quizAnswers: Record<number, { dosha: string, text: string }> | null = null;
+        let guestPrakriti: string | null = null;
 
-    if (location.state?.answers) {
-      quizAnswers = location.state.answers;
-    } else {
-      const guestData = sessionStorage.getItem('guestQuizResults');
-      if (guestData) {
-        try {
-          const parsedData = JSON.parse(guestData);
-          quizAnswers = parsedData.answers;
-          guestPrakriti = parsedData.prakriti;
-        } catch (e) {
-          console.error("Failed to parse guest quiz results:", e);
+        if (location.state?.answers) {
+            quizAnswers = location.state.answers;
+        } else {
+            const guestData = sessionStorage.getItem('guestQuizResults');
+            if (guestData) {
+                try {
+                    const parsedData = JSON.parse(guestData);
+                    quizAnswers = parsedData.answers;
+                    guestPrakriti = parsedData.prakriti;
+                } catch (e) {
+                    console.error("Failed to parse guest quiz results:", e);
+                }
+            }
         }
-      }
-    }
 
-    if (!quizAnswers) {
-      setIsLoading(false);
-      return;
-    }
-
-    const processResults = async () => {
-      const doshaCounts = { Vata: 0, Pitta: 0, Kapha: 0 };
-      const traits: Record<string, string[]> = { Vata: [], Pitta: [], Kapha: [], Other: [] };
-      const healthDetailsUpdate: Record<string, string> = {};
-      const fieldMapping: Record<string, string> = {
-        "Body Frame": "bodyFrame", "Skin": "skin", "Hair": "hair", "Eyes": "eyes",
-        "Appetite": "appetite", "Sleep": "sleep", "Energy": "energy", "Climate Preference": "climate",
-        "Stress Response": "stress", "Memory": "memory", "Activity Pace": "pace", "Mood": "mood",
-        "Money Handling": "money", "Communication Style": "communication", "Response to Change": "change",
-      };
-
-      Object.entries(quizAnswers!).forEach(([idStr, answer]) => {
-        const question = questions.find(q => q.id === parseInt(idStr));
-        if (question) {
-          const traitText = `${question.text}: ${answer.text}`;
-          if (answer.dosha !== 'Other') {
-            doshaCounts[answer.dosha as 'Vata' | 'Pitta' | 'Kapha']++;
-            traits[answer.dosha].push(traitText);
-          } else {
-            traits['Other'].push(traitText);
-          }
-          if (fieldMapping[question.text]) {
-            healthDetailsUpdate[fieldMapping[question.text]] = answer.text;
-          }
+        if (!quizAnswers) {
+            setIsLoading(false);
+            return;
         }
-      });
 
-      const totalDoshaAnswers = Object.values(doshaCounts).reduce((sum, count) => sum + count, 0);
-      const percentages = {
-        Vata: totalDoshaAnswers > 0 ? Math.round((doshaCounts.Vata / totalDoshaAnswers) * 100) : 0,
-        Pitta: totalDoshaAnswers > 0 ? Math.round((doshaCounts.Pitta / totalDoshaAnswers) * 100) : 0,
-        Kapha: totalDoshaAnswers > 0 ? Math.round((doshaCounts.Kapha / totalDoshaAnswers) * 100) : 0,
-      };
-      setDoshaPercentages(percentages);
-      setGroupedTraits(traits);
+        // Call the helper function to process data and get state updates
+        const results = await processQuizData(quizAnswers, guestPrakriti, user);
 
-      const sortedDoshas = Object.keys(doshaCounts).sort((a, b) => doshaCounts[b as keyof typeof doshaCounts] - doshaCounts[a as keyof typeof doshaCounts]);
-      const primary = sortedDoshas[0] || 'Balanced';
-      setPrimaryDosha(primary);
-
-      const finalPrakriti = guestPrakriti || `${primary}-${sortedDoshas[1] || 'Balanced'}`;
-      setPrakritiString(finalPrakriti);
-      
-      if (user?.id && !guestPrakriti) { // Update Firebase only for logged-in users who just finished
-          await updateDoc(doc(db, 'users', user.id), {
-              prakriti: finalPrakriti,
-              healthDetails: {
-                  ...user.healthDetails,
-                  ...healthDetailsUpdate
-              }
-          });
-      }
-
-      setPlan(prakritiPlans[finalPrakriti] || prakritiPlans['Tridoshic']);
-      setIsLoading(false);
+        // Set all state at once
+        setDoshaPercentages(results.percentages);
+        setGroupedTraits(results.traits);
+        setPrimaryDosha(results.primary);
+        setPrakritiString(results.finalPrakriti);
+        setPlan(results.plan);
+        setIsLoading(false);
     };
 
-    processResults();
+    loadResults();
   }, [location.state, user]);
 
   if (isLoading) {
