@@ -26,7 +26,7 @@ const Register: React.FC = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAnonymousLoading, setIsAnonymousLoading] = useState(false);
 
-  const { user, theme } = context || {};
+  const { user, theme } = context ?? {};
 
   useEffect(() => {
     if (user) {
@@ -99,7 +99,7 @@ const Register: React.FC = () => {
         email: email,
         createdAt: new Date().toISOString(),
       });
-
+      
       await saveGuestDataToFirebase(newUser.uid);
       navigate('/dashboard');
     } catch (err: any) {
@@ -137,7 +137,7 @@ const Register: React.FC = () => {
       }, { merge: true });
 
       await saveGuestDataToFirebase(googleUser.uid);
-
+      
       navigate('/dashboard');
     } catch (err: any) {
       console.error("Google Registration Error:", err.code);
@@ -163,7 +163,7 @@ const Register: React.FC = () => {
         createdAt: new Date().toISOString(),
         isAnonymous: true,
       }, { merge: true });
-
+      
       await saveGuestDataToFirebase(anonUser.uid);
 
       navigate('/dashboard');
