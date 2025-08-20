@@ -12,7 +12,8 @@ const DietDonutChart: React.FC<DietProps> = ({ chartData, foodsToAvoid }) => {
         <ResponsiveContainer>
           <PieChart>
             <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={70} outerRadius={110} paddingAngle={3}>
-              {chartData.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.color} />))}
+              {/* CHANGE: Using entry.name for a stable key instead of index */}
+              {chartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.color} />))}
             </Pie>
             <Tooltip />
             <Legend />

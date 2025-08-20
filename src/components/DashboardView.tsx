@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, subDays } from 'date-fns';
-import { AppContext } from '../context/AppContext';
 import { db } from '../data/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
@@ -23,7 +22,6 @@ import RoutineTimetable from '../components/RoutineTimetable';
 // Icons
 import { CalendarDaysIcon, CheckCircleIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
-// Expanded list of daily quotes
 const dailyQuotes = [
   { quote: 'The greatest wealth is health.', author: 'Virgil' },
   { quote: 'He who has health has hope; and he who has hope, has everything.', author: 'Thomas Carlyle' },
@@ -38,7 +36,7 @@ const dailyQuotes = [
 ];
 
 type DashboardViewProps = {
-  user: any; // Replace with a more specific user type if available
+  user: any; 
   balanceHistory: { date: string; score: number }[];
   setBalanceHistory: React.Dispatch<React.SetStateAction<{ date: string; score: number }[]>>;
   streakDays: Date[];
@@ -63,12 +61,15 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
   const [isDoshaModalOpen, setIsDoshaModalOpen] = useState(false);
-  const { setUser } = useContext(AppContext);
+  
+  // CHANGE: Removed the unused 'setUser' variable.
+  // The user object is passed in via props, so we don't need to get it from context here.
 
   // Effect to load data from Firebase on component mount
   useEffect(() => {
     const loadData = async () => {
-      if (user && user.id) {
+      // CHANGE: Used optional chaining for a cleaner check.
+      if (user?.id) {
         const userDoc = doc(db, 'users', user.id);
         const userSnap = await getDoc(userDoc);
         if (userSnap.exists()) {
@@ -89,7 +90,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   // Effect to update Firebase when local data changes
   useEffect(() => {
     const updateFirebase = async () => {
-      if (user && user.id) {
+      // CHANGE: Used optional chaining.
+      if (user?.id) {
         const userDoc = doc(db, 'users', user.id);
         await updateDoc(userDoc, {
           balanceHistory,
@@ -98,8 +100,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         }).catch(err => console.error("Firebase update failed:", err));
       }
     };
-    // Debounce or add a condition to prevent excessive writes if necessary
-    updateFirebase();
+    // Only run the update if the user exists and data is not empty, to prevent unnecessary writes on load.
+    if (user?.id && (balanceHistory.length > 0 || streakDays.length > 0 || reminders.length > 0)) {
+        updateFirebase();
+    }
   }, [balanceHistory, streakDays, reminders, user?.id]);
 
   const handleLogBalance = (newScore: number) => {
@@ -158,7 +162,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             <ProgressLineChart data={chartData} />
           </div>
           <div className="lg:col-span-1">
-            <RemindersCard reminders={reminders} setReminders={setReminders} />
+            <RemindersCard />
           </div>
         </motion.div>
 
@@ -173,7 +177,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               <button
                 key={tab}
                 onClick={() => setActivePlanTab(tab)}
-                className={`py-2 px-4 font-semibold capitalize transition-colors duration-300 ${activePlanTab === tab ? 'text-ayurGreen border-b-2 border-ayurGreen' : 'text-gray-500 hover:text-ayurGreen'}`}
+                className={`py-2 px-4 font-semibold capitalize transition-colors duration-300 ${activePlanTab === tab ? 'text-ayurGreen dark:text-ayurBeige border-b-2 border-ayurGreen dark:border-ayurBeige' : 'text-gray-500 hover:text-ayurGreen dark:hover:text-ayurBeige'}`}
               >
                 {tab}
               </button>
@@ -182,8 +186,9 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="p-4 min-h-[400px]">
             {plan && activePlanTab === 'recommendations' && (
               <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6" initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
+                {/* CHANGE: Using a more stable key than the array index. */}
                 {plan.recommendations.map((rec: any, index: number) => (
-                  <RecommendationCard key={index} {...rec} />
+                  <RecommendationCard key={`${rec.category}-${index}`} {...rec} />
                 ))}
               </motion.div>
             )}
@@ -195,7 +200,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
       <AnimatePresence>
         {isBalanceModalOpen && <BalanceCheckModal onLog={handleLogBalance} onClose={() => setIsBalanceModalOpen(false)} />}
-        {isStreakModalOpen && <StreakCalendarModal streakDays={streakDays} setStreakDays={setStreakDays} onClose={() => setIsStreakModalOpen(false)} />}
+        {isStreakModalOpen && <StreakCalendarModal streakDays={streakDays} onClose={() => setIsStreakModalOpen(false)} />}
         {isDoshaModalOpen && <DoshaInfoModal dosha={primaryDosha} onClose={() => setIsDoshaModalOpen(false)} />}
       </AnimatePresence>
     </>

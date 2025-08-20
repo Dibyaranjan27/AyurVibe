@@ -103,7 +103,7 @@ const RemindersCard: React.FC = () => {
                                     mode="single"
                                     selected={selectedDate}
                                     onSelect={setSelectedDate}
-                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border dark:border-gray-700 p-2"
+                                    className="bg-white dark:bg-gray-800 dark:text-white rounded-lg shadow-lg border dark:border-gray-700 p-2"
                                     classNames={{
                                         caption: "text-gray-800 dark:text-gray-200",
                                         head: "text-gray-600 dark:text-gray-400",
@@ -121,7 +121,7 @@ const RemindersCard: React.FC = () => {
                         <select
                             value={selectedTime}
                             onChange={(e) => setSelectedTime(e.target.value)}
-                            className="w-full appearance-none text-xs p-2 pl-7 rounded-md bg-gray-200 dark:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-ayurGreen"
+                            className="w-full appearance-none text-xs p-2 pl-7 rounded-md bg-gray-200 dark:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-ayurGreen scrollbar-thin scrollbar-thumb-ayurGreen scrollbar-track-gray-100 dark:scrollbar-thumb-ayurBeige dark:scrollbar-track-gray-800"
                             aria-label="Set time for reminder"
                         >
                             <option value="">Set Time</option>

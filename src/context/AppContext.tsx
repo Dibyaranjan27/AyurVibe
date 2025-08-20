@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { auth, db } from '../data/firebase';
@@ -10,6 +10,9 @@ interface User {
   id: string;
   name: string;
   email: string;
+  // Add any other user properties you might have, e.g., prakriti
+  prakriti?: string; 
+  healthDetails?: Record<string, any>;
 }
 
 interface AppContextType {
@@ -32,12 +35,16 @@ i18n.use(initReactI18next).init({
   resources: {
     en: {
       translation: {
-        // ... english translations
+        heroHeading: 'Embrace Wellness with AyurVibe',
+        heroSubheading: 'Journey into Ayurveda with personalized quizzes, natural remedies, and a holistic lifestyle tailored to your unique Prakriti.',
+        // ... other english translations
       },
     },
     hi: {
       translation: {
-        // ... hindi translations
+        heroHeading: 'आयुर्विब के साथ कल्याण को गले लगाओ', // Example translation
+        heroSubheading: 'व्यक्तिगत क्विज़, प्राकृतिक उपचार और अपनी अनूठी प्रकृति के अनुरूप एक समग्र जीवन शैली के साथ आयुर्वेद की यात्रा।', // Example translation
+        // ... other hindi translations
       },
     },
   },
@@ -80,17 +87,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-          const userData = {
+          const firestoreData = userDoc.data();
+          const userData: User = {
             id: firebaseUser.uid,
-            name: userDoc.data().name,
+            name: firestoreData.name,
             email: firebaseUser.email || '',
-          } as User;
+            prakriti: firestoreData.prakriti,
+            healthDetails: firestoreData.healthDetails,
+          };
           setUser(userData);
           localStorage.setItem('user', JSON.stringify(userData));
         } else {
-            // Handle case where user exists in auth but not firestore
             console.warn("User document not found in Firestore for UID:", firebaseUser.uid);
-            setUser(null); // Or create a default user object
+            setUser(null);
             localStorage.removeItem('user');
         }
       } else {
@@ -101,7 +110,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return () => unsubscribe(); // Cleanup listener on component unmount
   }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     darkMode,
     toggleDarkMode,
     user,
@@ -112,7 +121,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       heading: i18n.t('heroHeading'),
       subheading: i18n.t('heroSubheading'),
     },
-  };
+  }), [darkMode, user, language]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

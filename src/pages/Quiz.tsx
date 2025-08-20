@@ -10,18 +10,19 @@ import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
 import FloatingLeaves from '../components/FloatingLeaves';
 
 const Quiz: React.FC = () => {
+  // --- All Hooks are now at the top of the component ---
   const navigate = useNavigate();
   const { t } = useTranslation();
   const context = useContext(AppContext);
-
-  if (!context) return null;
-  const { user, setUser } = context;
-
+  
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
   const [answers, setAnswers] = useState<Record<number, { dosha: string; text: string }>>({});
   const [selectedDosha, setSelectedDosha] = useState<string | null>(null);
   const [customText, setCustomText] = useState<string>('');
   const [isOtherSelected, setIsOtherSelected] = useState<boolean>(false);
+
+  // Safely destructure context after the hook call
+  const { user, setUser } = context || {};
 
   useEffect(() => {
     const currentId = questions[currentQuestion].id;
@@ -41,6 +42,11 @@ const Quiz: React.FC = () => {
       setIsOtherSelected(false);
     }
   }, [currentQuestion, answers]);
+
+  // --- Conditional returns are now AFTER all hooks ---
+  if (!context) {
+    return null; // Or a loading spinner
+  }
 
   const handleNext = () => {
     if (currentQuestion < questions.length - 1) {
@@ -91,12 +97,15 @@ const Quiz: React.FC = () => {
     const secondaryDosha = sortedDoshas[1] || 'Pitta';
     const prakriti = doshaCounts.Vata === doshaCounts.Pitta && doshaCounts.Pitta === doshaCounts.Kapha ? 'Tridoshic' : `${primaryDosha}-${secondaryDosha}`;
 
-    if (user && user.id) {
+    // CHANGE: Used optional chaining for a cleaner check
+    if (user?.id) {
       await saveQuizAnswers(user.id, answers, prakriti);
       const updatedDoc = await getDoc(doc(db, 'users', user.id));
       if (updatedDoc.exists()) {
         const updatedData = updatedDoc.data() as typeof user;
-        setUser({ ...user, prakriti: updatedData.prakriti });
+        if (setUser) {
+          setUser({ ...user, prakriti: updatedData.prakriti });
+        }
       }
       navigate('/results', { state: { answers } });
     } else {
@@ -118,7 +127,7 @@ const Quiz: React.FC = () => {
     <div className="relative min-h-screen bg-gradient-to-br from-green-50 via-stone-50 to-amber-50 dark:from-gray-800 dark:via-gray-900 dark:to-black flex items-center justify-center p-4 font-openSans transition-colors duration-500 overflow-hidden">
       <FloatingLeaves />
 
-      <div className="relative mt-24 z-10 max-w-2xl w-full bg-white/70 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 sm:p-10 mx-auto">
+      <div className="relative md:mt-24 z-10 max-w-2xl w-full bg-white/70 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 sm:p-10 mx-auto">
         <div className="text-center mb-8">
           <h2 className="text-3xl sm:text-4xl font-lora font-bold text-ayurGreen dark:text-ayurBeige mb-2">
             {t('quiz')}
@@ -162,9 +171,10 @@ const Quiz: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                {currentQuestionData.options.map((option, index) => (
+                {/* CHANGE: Using option.text as the key instead of index */}
+                {currentQuestionData.options.map((option) => (
                   <button
-                    key={index}
+                    key={option.text}
                     onClick={() => handleOptionSelect(option)}
                     className={`group p-4 rounded-xl shadow-sm text-center transition-all duration-300 transform hover:-translate-y-1 border-2 ${
                       selectedDosha === option.dosha && !isOtherSelected
@@ -180,7 +190,6 @@ const Quiz: React.FC = () => {
                 ))}
               </div>
               
-              {/* CHANGE: Removed the conditional wrapper, so the "Other" button always appears */}
               <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
                 <button
                   onClick={() => handleOptionSelect({ text: 'Other', dosha: 'Other', illustration: '' })}

@@ -1,10 +1,8 @@
 import { useContext, useState, useRef, useEffect } from 'react';
-import { useNavigate, Link, useLocation, NavLink as RouterNavLink } from 'react-router-dom';
+import { useNavigate, Link, NavLink as RouterNavLink } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { db, auth } from '../data/firebase';
 import { signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import DarkModeButton from './DarkModeButton';
 import { useOnClickOutside } from '../hooks/useOnClickOutside';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -16,11 +14,29 @@ import {
   Bars3Icon,
   XMarkIcon,
 } from '@heroicons/react/24/solid';
+import DarkModeButton from './DarkModeButton';
+
+// CHANGE: Moved the NavLink component definition out of the parent component.
+// It now uses the 'isActive' property from RouterNavLink for styling, which is more efficient.
+const NavLink = ({ to, children, onClick }: { to: string; children: React.ReactNode; onClick?: () => void }) => (
+  <RouterNavLink
+    to={to}
+    onClick={onClick}
+    className={({ isActive }) =>
+      `text-gray-800 hover:text-ayurGreen dark:text-white dark:hover:text-ayurBeige transition-colors duration-200 font-medium ${
+        isActive ? 'text-ayurGreen dark:text-ayurBeige' : ''
+      }`
+    }
+  >
+    {children}
+  </RouterNavLink>
+);
 
 const Navbar: React.FC = () => {
   const context = useContext(AppContext);
   const navigate = useNavigate();
-  const location = useLocation();
+  
+  // CHANGE: Removed the unused 'location' variable and 'useLocation' hook.
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -47,6 +63,8 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     if (context?.user?.name) {
       setUserName(context.user.name);
+    } else {
+      setUserName('');
     }
   }, [context?.user]);
 
@@ -56,8 +74,7 @@ const Navbar: React.FC = () => {
   const handleLogout = async () => {
     if (setUser) {
       try {
-        await signOut(auth); // Sign out from Firebase
-        // The onAuthStateChanged listener in AppContext will handle setting user to null
+        await signOut(auth);
         setIsDropdownOpen(false);
         setIsMobileMenuOpen(false);
         navigate('/login');
@@ -66,20 +83,6 @@ const Navbar: React.FC = () => {
       }
     }
   };
-
-  const NavLink = ({ to, children, onClick }: { to: string; children: React.ReactNode; onClick?: () => void }) => (
-    <RouterNavLink
-      to={to}
-      onClick={onClick}
-      className={({ isActive }) =>
-        `text-gray-800 hover:text-ayurGreen dark:text-white dark:hover:text-ayurBeige transition-colors duration-200 font-medium ${
-          isActive ? 'text-ayurGreen dark:text-ayurBeige' : ''
-        }`
-      }
-    >
-      {children}
-    </RouterNavLink>
-  );
 
   return (
     <>
