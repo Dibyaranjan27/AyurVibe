@@ -5,7 +5,7 @@ import { CalendarDaysIcon, ClockIcon, PlusIcon, TrashIcon } from '@heroicons/rea
 import * as SolidIcons from '@heroicons/react/24/solid';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
-import { useAppNotifications } from '../context/NotificationsProvider'; // Use our new hook
+import { useAppNotifications } from '../context/NotificationsProvider';
 
 const RemindersCard: React.FC = () => {
     const { reminders, addReminder, toggleReminder, deleteReminder } = useAppNotifications();
@@ -31,9 +31,6 @@ const RemindersCard: React.FC = () => {
         setSelectedTime('');
     };
     
-    // ... (the rest of the component's JSX remains the same as before)
-    // The only change is that it now gets its functions and data from the useAppNotifications hook.
-
     const timeOptions = Array.from({ length: 48 }, (_, i) => {
         const h = Math.floor(i / 2);
         const m = (i % 2) * 30;
@@ -51,16 +48,26 @@ const RemindersCard: React.FC = () => {
             <div className="flex-grow space-y-3 overflow-y-auto pr-2 min-h-[100px]">
                 {reminders.map((r) => (
                     <div key={r.id} className="flex items-center justify-between group">
-                        <div onClick={() => toggleReminder(r.id)} className="flex items-center space-x-3 cursor-pointer">
-                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${r.completed ? 'bg-ayurGreen border-ayurGreen' : 'border-gray-400 group-hover:border-ayurGreen'}`}>
+                        {/* CHANGE: Converted the interactive 'div' into a 'button' for accessibility */}
+                        <button 
+                          type="button"
+                          onClick={() => toggleReminder(r.id)} 
+                          className="flex items-center space-x-3 w-full text-left focus:outline-none focus:ring-2 focus:ring-ayurGreen rounded-md"
+                          aria-label={`Mark reminder ${r.text} as ${r.completed ? 'incomplete' : 'complete'}`}
+                        >
+                            <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${r.completed ? 'bg-ayurGreen border-ayurGreen' : 'border-gray-400 group-hover:border-ayurGreen'}`}>
                                 {r.completed && <SolidIcons.CheckIcon className="w-3 h-3 text-white" />}
                             </div>
                             <div>
                                 <span className={`transition-all text-sm ${r.completed ? 'line-through text-gray-500 dark:text-gray-600' : 'text-gray-700 dark:text-gray-200'}`}>{r.text}</span>
                                 <p className="text-xs text-gray-400 dark:text-gray-500">{formatDate(r.dateTime)}</p>
                             </div>
-                        </div>
-                        <button onClick={() => deleteReminder(r.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-600">
+                        </button>
+                        <button 
+                          onClick={() => deleteReminder(r.id)} 
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-600 ml-2 flex-shrink-0"
+                          aria-label={`Delete reminder ${r.text}`}
+                        >
                             <TrashIcon className="w-4 h-4" />
                         </button>
                     </div>
@@ -76,7 +83,11 @@ const RemindersCard: React.FC = () => {
                         placeholder="Add a reminder..."
                         className="flex-grow bg-transparent focus:outline-none text-sm text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
-                    <button onClick={handleAddReminder} className="bg-ayurGreen text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 hover:bg-ayurGreen/80">
+                    <button 
+                      onClick={handleAddReminder} 
+                      className="bg-ayurGreen text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 hover:bg-ayurGreen/80"
+                      aria-label="Add new reminder"
+                    >
                         <PlusIcon className="w-5 h-5" />
                     </button>
                 </div>
@@ -92,7 +103,7 @@ const RemindersCard: React.FC = () => {
                                     mode="single"
                                     selected={selectedDate}
                                     onSelect={setSelectedDate}
-                                    className="bg-white dark:bg-gray-800 dark:text-white rounded-lg shadow-lg border dark:border-gray-700 p-2"
+                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border dark:border-gray-700 p-2"
                                     classNames={{
                                         caption: "text-gray-800 dark:text-gray-200",
                                         head: "text-gray-600 dark:text-gray-400",
@@ -111,6 +122,7 @@ const RemindersCard: React.FC = () => {
                             value={selectedTime}
                             onChange={(e) => setSelectedTime(e.target.value)}
                             className="w-full appearance-none text-xs p-2 pl-7 rounded-md bg-gray-200 dark:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-ayurGreen"
+                            aria-label="Set time for reminder"
                         >
                             <option value="">Set Time</option>
                             {timeOptions.map((time) => (
