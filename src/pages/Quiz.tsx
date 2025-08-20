@@ -15,7 +15,7 @@ const Quiz: React.FC = () => {
   const context = useContext(AppContext);
 
   if (!context) return null;
-  const { user } = context;
+  const { user, setUser } = context;
 
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
   const [answers, setAnswers] = useState<Record<number, { dosha: string; text: string }>>({});
@@ -42,40 +42,34 @@ const Quiz: React.FC = () => {
     }
   }, [currentQuestion, answers]);
 
-  const handleOptionSelect = (option: Question['options'][0]) => {
-    setSelectedDosha(option.dosha);
-    if (option.dosha === 'Other') {
-      setIsOtherSelected(true);
-    } else {
-      setIsOtherSelected(false);
-      const currentId = questions[currentQuestion].id;
-      setAnswers({
-        ...answers,
-        [currentId]: { dosha: option.dosha, text: option.text },
-      });
-      if (currentQuestion < questions.length - 1) {
-        setTimeout(() => setCurrentQuestion(currentQuestion + 1), 300);
-      } else {
-        processResults();
-      }
-    }
-  };
-
-  const handleCustomSubmit = () => {
-    if (!customText.trim()) {
-      alert(t('customRequired', { defaultValue: 'Please provide a custom description for Other.' }));
-      return;
-    }
-    const currentId = questions[currentQuestion].id;
-    setAnswers({
-      ...answers,
-      [currentId]: { dosha: 'Other', text: customText },
-    });
+  const handleNext = () => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       processResults();
     }
+  };
+
+  const handleOptionSelect = (option: Question['options'][0]) => {
+    setSelectedDosha(option.dosha);
+    const currentId = questions[currentQuestion].id;
+    if (option.dosha === 'Other') {
+      setIsOtherSelected(true);
+    } else {
+      setIsOtherSelected(false);
+      setAnswers({ ...answers, [currentId]: { dosha: option.dosha, text: option.text } });
+      setTimeout(handleNext, 300);
+    }
+  };
+
+  const handleCustomSubmit = () => {
+    if (!customText.trim()) {
+      alert(t('customRequired', { defaultValue: 'Please provide a custom description.' }));
+      return;
+    }
+    const currentId = questions[currentQuestion].id;
+    setAnswers({ ...answers, [currentId]: { dosha: 'Other', text: customText } });
+    handleNext();
   };
 
   const handlePrevious = () => {
@@ -85,63 +79,46 @@ const Quiz: React.FC = () => {
   };
 
   const processResults = async () => {
+    const doshaCounts = { Vata: 0, Pitta: 0, Kapha: 0 };
+    Object.values(answers).forEach((answer) => {
+      if (answer.dosha !== 'Other') {
+        doshaCounts[answer.dosha as keyof typeof doshaCounts]++;
+      }
+    });
+    
+    const sortedDoshas = Object.keys(doshaCounts).sort((a, b) => doshaCounts[b as keyof typeof doshaCounts] - doshaCounts[a as keyof typeof doshaCounts]);
+    const primaryDosha = sortedDoshas[0] || 'Vata';
+    const secondaryDosha = sortedDoshas[1] || 'Pitta';
+    const prakriti = doshaCounts.Vata === doshaCounts.Pitta && doshaCounts.Pitta === doshaCounts.Kapha ? 'Tridoshic' : `${primaryDosha}-${secondaryDosha}`;
+
     if (user && user.id) {
-      const doshaCounts = { Vata: 0, Pitta: 0, Kapha: 0 };
-      Object.values(answers).forEach((answer) => {
-        if (answer.dosha !== 'Other') {
-          doshaCounts[answer.dosha as keyof typeof doshaCounts]++;
-        }
-      });
-      const primaryDosha = Object.keys(doshaCounts).reduce((a, b) =>
-        doshaCounts[a as keyof typeof doshaCounts] > doshaCounts[b as keyof typeof doshaCounts] ? a : b
-      );
-      const secondaryDosha = Object.keys(doshaCounts)
-        .filter((d) => d !== primaryDosha)
-        .reduce(
-          (a, b) =>
-            doshaCounts[a as keyof typeof doshaCounts] > doshaCounts[b as keyof typeof doshaCounts] ? a : b,
-          primaryDosha
-        );
-      const prakriti =
-        doshaCounts[primaryDosha as keyof typeof doshaCounts] ===
-        doshaCounts[secondaryDosha as keyof typeof doshaCounts]
-          ? 'Tridoshic'
-          : `${primaryDosha}-${secondaryDosha}`;
       await saveQuizAnswers(user.id, answers, prakriti);
       const updatedDoc = await getDoc(doc(db, 'users', user.id));
       if (updatedDoc.exists()) {
         const updatedData = updatedDoc.data() as typeof user;
-        context.setUser({ ...user, prakriti: updatedData.prakriti });
+        setUser({ ...user, prakriti: updatedData.prakriti });
       }
       navigate('/results', { state: { answers } });
+    } else {
+      const guestResults = { answers, prakriti };
+      sessionStorage.setItem('guestQuizResults', JSON.stringify(guestResults));
+      navigate('/results');
     }
   };
 
   const questionVariants = {
-    enter: {
-      x: 100,
-      opacity: 0,
-    },
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1,
-    },
-    exit: {
-      zIndex: 0,
-      x: -100,
-      opacity: 0,
-    },
+    enter: { x: 100, opacity: 0 },
+    center: { zIndex: 1, x: 0, opacity: 1 },
+    exit: { zIndex: 0, x: -100, opacity: 0 },
   };
 
   const currentQuestionData = questions[currentQuestion];
-  const currentOptions = [...currentQuestionData.options];
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-green-50 via-stone-50 to-amber-50 dark:from-gray-800 dark:via-gray-900 dark:to-black flex items-center justify-center p-4 font-openSans transition-colors duration-500 overflow-hidden">
       <FloatingLeaves />
 
-      <div className="relative z-10 max-w-2xl mt-24 w-full bg-white/70 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 sm:p-10 mx-auto">
+      <div className="relative mt-24 z-10 max-w-2xl w-full bg-white/70 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 sm:p-10 mx-auto">
         <div className="text-center mb-8">
           <h2 className="text-3xl sm:text-4xl font-lora font-bold text-ayurGreen dark:text-ayurBeige mb-2">
             {t('quiz')}
@@ -164,7 +141,7 @@ const Quiz: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative h-96 sm:h-80 flex items-center justify-center overflow-hidden">
+        <div className="relative sm:h-80 flex items-center justify-center overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentQuestion}
@@ -184,14 +161,14 @@ const Quiz: React.FC = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                {currentOptions.map((option, index) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                {currentQuestionData.options.map((option, index) => (
                   <button
                     key={index}
                     onClick={() => handleOptionSelect(option)}
-                    className={`group p-4 pt-6 rounded-xl shadow-sm text-center transition-all duration-300 transform hover:-translate-y-1 border-2 ${
-                      selectedDosha === option.dosha
-                        ? 'bg-ayurGreen/20 border-ayurGreen dark:bg-ayurGreen/30'
+                    className={`group p-4 rounded-xl shadow-sm text-center transition-all duration-300 transform hover:-translate-y-1 border-2 ${
+                      selectedDosha === option.dosha && !isOtherSelected
+                        ? 'bg-ayurGreen/20 border-ayurGreen dark:bg-ayurBeige/20 dark:border-ayurBeige'
                         : 'bg-gray-100/80 hover:bg-white border-transparent dark:bg-gray-700/80 dark:hover:bg-gray-700'
                     }`}
                     aria-label={option.text}
@@ -202,39 +179,47 @@ const Quiz: React.FC = () => {
                   </button>
                 ))}
               </div>
-
-              <div className="flex justify-center items-center">
+              
+              {/* CHANGE: Removed the conditional wrapper, so the "Other" button always appears */}
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
                 <button
-                  onClick={() => handleOptionSelect({ text: t('other', { defaultValue: 'Other (please specify)' }), dosha: 'Other', illustration: '/illustrations/other.svg' })}
-                  className={`group p-4 pt-6 rounded-xl shadow-sm text-center transition-all duration-300 transform hover:-translate-y-1 border-2 ${
+                  onClick={() => handleOptionSelect({ text: 'Other', dosha: 'Other', illustration: '' })}
+                  className={`w-full sm:w-auto p-4 rounded-xl shadow-sm text-center transition-all duration-300 transform hover:-translate-y-1 border-2 ${
                     isOtherSelected
-                      ? 'bg-ayurGreen/20 border-ayurGreen dark:bg-ayurGreen/30'
+                      ? 'bg-ayurGreen/20 border-ayurGreen dark:bg-ayurBeige/20 dark:border-ayurBeige'
                       : 'bg-gray-100/80 hover:bg-white border-transparent dark:bg-gray-700/80 dark:hover:bg-gray-700'
                   }`}
-                  aria-label={t('other', { defaultValue: 'Other (please specify)' })}
                 >
                   <span className="text-md font-semibold text-gray-800 dark:text-gray-200">
-                    {t('other', { defaultValue: 'Other (please specify)' })}
+                   {t('other', { defaultValue: 'Specify another answer' })}
                   </span>
                 </button>
-                {isOtherSelected && (
-                  <div className="ml-4 flex items-center">
-                    <input
-                      type="text"
-                      value={customText}
-                      onChange={(e) => setCustomText(e.target.value)}
-                      className="w-full max-w-xs p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-ayurGreen text-gray-900 dark:text-gray-100"
-                      placeholder={t('enterCustom', { defaultValue: 'Enter your custom description' })}
-                    />
-                    <button
-                      onClick={handleCustomSubmit}
-                      className="ml-2 bg-ayurGreen text-white px-4 py-2 rounded-full hover:bg-ayurGreen/80 transition-all duration-300"
+                <AnimatePresence>
+                  {isOtherSelected && (
+                    <motion.div
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      className="flex items-center w-full sm:w-auto"
                     >
-                      Next
-                    </button>
-                  </div>
-                )}
+                      <input
+                        type="text"
+                        value={customText}
+                        onChange={(e) => setCustomText(e.target.value)}
+                        className="flex-grow p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-ayurGreen text-gray-900 dark:text-gray-100"
+                        placeholder={t('enterCustom', { defaultValue: 'Describe...' })}
+                      />
+                      <button
+                        onClick={handleCustomSubmit}
+                        className="ml-2 bg-ayurGreen text-white px-4 py-3 rounded-lg hover:bg-ayurGreen/80 transition-colors"
+                      >
+                        <ArrowRightIcon className="h-5 w-5" />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
+
             </motion.div>
           </AnimatePresence>
         </div>
@@ -242,18 +227,19 @@ const Quiz: React.FC = () => {
         <div className="flex justify-between mt-8 pt-4 border-t border-gray-200 dark:border-gray-600">
           <button
             onClick={handlePrevious}
-            className="flex items-center gap-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-5 py-2.5 rounded-full hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+            className="flex items-center gap-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-5 py-2.5 rounded-full font-semibold hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             disabled={currentQuestion === 0}
           >
             <ArrowLeftIcon className="h-5 w-5" />
             Previous
           </button>
+          
           <button
-            onClick={handleCustomSubmit}
-            className="flex items-center gap-2 bg-ayurGreen text-white px-5 py-2.5 rounded-full hover:bg-ayurGreen/80 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
-            disabled={!isOtherSelected || !customText.trim()}
+            onClick={handleNext}
+            className="flex items-center gap-2 bg-ayurGreen text-white px-5 py-2.5 rounded-full font-semibold hover:bg-ayurGreen/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled={!answers[currentQuestionData.id] || (answers[currentQuestionData.id]?.dosha === 'Other' && !customText.trim())}
           >
-            Next
+            {currentQuestion === questions.length - 1 ? 'Finish' : 'Next'}
             <ArrowRightIcon className="h-5 w-5" />
           </button>
         </div>

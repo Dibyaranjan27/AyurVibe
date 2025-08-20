@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, signInAnonymously } from 'firebase/auth';
 import { auth, db } from '../data/firebase';
@@ -8,14 +8,12 @@ import { useTranslation } from 'react-i18next';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { UserCircleIcon } from '@heroicons/react/24/solid';
 import FloatingLeaves from '@/components/FloatingLeaves';
+import { saveGuestDataToFirebase } from '../utils/guestUtils';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const context = useContext(AppContext);
-
-  if (!context) return null;
-  const { setUser, theme } = context;
 
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -27,6 +25,9 @@ const Register: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAnonymousLoading, setIsAnonymousLoading] = useState(false);
+
+  if (!context) return null;
+  const { theme } = context;
 
   const validateForm = () => {
     if (!name.trim() || name.length < 2) {
@@ -47,6 +48,7 @@ const Register: React.FC = () => {
       setError(t('passwordMismatch', { defaultValue: 'Passwords do not match.' }));
       return false;
     }
+    setError('');
     return true;
   };
 
@@ -66,12 +68,14 @@ const Register: React.FC = () => {
         email: email,
         createdAt: new Date().toISOString(),
       });
+      
+      // After creating the user doc, save any guest data to their new account
+      await saveGuestDataToFirebase(user.uid);
 
-      setUser({ id: user.uid, name, email, prakriti: null, mobile: '' });
-      navigate(`/?theme=${theme}`);
+      // The onAuthStateChanged listener in AppContext will handle setUser
+      navigate('/dashboard');
     } catch (err: any) {
-      setError(t('registerError', { defaultValue: 'Registration failed. Please try again or check your credentials.' }));
-      navigate(`/login?theme=${theme}`);
+      setError(t('registerError', { defaultValue: 'Registration failed. This email may already be in use.' }));
     } finally {
       setIsLoading(false);
     }
@@ -85,16 +89,18 @@ const Register: React.FC = () => {
       const user = result.user;
 
       await setDoc(doc(db, 'users', user.uid), {
-        name: user.displayName || '',
+        name: user.displayName || 'Google User',
         email: user.email || '',
         createdAt: new Date().toISOString(),
       }, { merge: true });
 
-      setUser({ id: user.uid, name: user.displayName || '', email: user.email || '', prakriti: null, mobile: '' });
-      navigate(`/?theme=${theme}`);
+      // After creating/merging the user doc, save any guest data
+      await saveGuestDataToFirebase(user.uid);
+      
+      // The onAuthStateChanged listener in AppContext will handle setUser
+      navigate('/dashboard');
     } catch (err: any) {
       setError(t('registerError', { defaultValue: 'Google registration failed. Please try again.' }));
-      navigate(`/login?theme=${theme}`);
     } finally {
       setIsGoogleLoading(false);
     }
@@ -112,9 +118,10 @@ const Register: React.FC = () => {
         createdAt: new Date().toISOString(),
         isAnonymous: true,
       }, { merge: true });
+      
+      await saveGuestDataToFirebase(user.uid);
 
-      setUser({ id: user.uid, name: 'Anonymous User', email: '', prakriti: null, mobile: '' });
-      navigate(`/?theme=${theme}`);
+      navigate('/dashboard');
     } catch (err: any) {
       setError(t('anonymousError', { defaultValue: 'Anonymous login failed. Please try again.' }));
     } finally {
@@ -123,13 +130,13 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="h-full w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 md:p-6">
+    <div className="bg-gray-50 dark:bg-gray-900 flex items-center justify-center min-h-screen p-4">
       <FloatingLeaves />
-      <div className="w-full mt-24 max-w-5xl mb-[37px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
+      <div className="w-full max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
         <div className="flex flex-col lg:flex-row-reverse">
-          <div className="lg:w-1/2 relative animate-slideRight">
+          <div className="lg:w-1/2 relative hidden lg:block animate-slideRight">
             <img 
-              src="src/assets/leaves_background.jpg"
+              src="/src/assets/leaves_background.jpg"
               alt="Ayurveda"
               className="w-full h-full object-cover"
             />
@@ -145,7 +152,7 @@ const Register: React.FC = () => {
           <div className="w-full lg:w-1/2 p-8 animate-slideLeft">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">Register</h1>
             {error && (
-              <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg">
+              <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg text-sm">
                 {error}
               </div>
             )}
@@ -159,14 +166,14 @@ const Register: React.FC = () => {
                   className="w-full pl-10 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-ayurGreen dark:focus:border-ayurGreen/70 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   disabled={isLoading}
                 />
-                <Mail className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
+                <UserCircleIcon className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
               </div>
               <div className="relative">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email or Phone Number"
+                  placeholder="Email Address"
                   className="w-full pl-10 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-ayurGreen dark:focus:border-ayurGreen/70 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   disabled={isLoading}
                 />
@@ -212,15 +219,12 @@ const Register: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="w-full p-3 bg-gradient-to-r from-ayurGreen to-green-400 text-white rounded-full hover:opacity-90 transition-all flex items-center justify-center"
+                className="w-full p-3 bg-gradient-to-r from-ayurGreen to-green-400 text-white font-bold rounded-full hover:opacity-90 transition-all flex items-center justify-center disabled:opacity-50"
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" />
-                    </svg>
+                    <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" /></svg>
                     Registering...
                   </>
                 ) : (
@@ -229,37 +233,26 @@ const Register: React.FC = () => {
               </button>
             </form>
             <div className="text-center mt-6">
-              <p className="text-gray-600 dark:text-gray-400 mb-4">Register with</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 relative before:content-[''] before:absolute before:left-0 before:top-1/2 before:w-[40%] before:h-[1px] before:bg-gray-300 dark:before:bg-gray-600 after:content-[''] after:absolute after:right-0 after:top-1/2 after:w-[40%] after:h-[1px] after:bg-gray-300 dark:after:bg-gray-600">OR</p>
               <div className="flex justify-center space-x-4">
                 <button
                   onClick={handleGoogleRegister}
-                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center justify-center"
+                  className="p-3 bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center justify-center"
                   disabled={isGoogleLoading}
                 >
                   {isGoogleLoading ? (
-                    <svg className="animate-spin h-5 w-5 text-gray-500" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" />
-                    </svg>
+                    <svg className="animate-spin h-5 w-5 text-gray-500" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" /></svg>
                   ) : (
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
+                    <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.20-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>
                   )}
                 </button>
                 <button
                   onClick={handleAnonymousLogin}
-                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center justify-center"
+                  className="p-3 bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center justify-center"
                   disabled={isAnonymousLoading}
                 >
                   {isAnonymousLoading ? (
-                    <svg className="animate-spin h-5 w-5 text-gray-500" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" />
-                    </svg>
+                    <svg className="animate-spin h-5 w-5 text-gray-500" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" /></svg>
                   ) : (
                     <UserCircleIcon className="w-5 h-5 text-gray-500" />
                   )}
@@ -269,9 +262,9 @@ const Register: React.FC = () => {
             <div className="text-center mt-4">
               <p className="text-gray-600 dark:text-gray-400">
                 Already have an account?{' '}
-                <a href={`/login?theme=${theme}`} className="text-ayurGreen hover:underline font-medium">
+                <Link to={`/login?theme=${theme}`} className="text-ayurGreen hover:underline font-medium">
                   Log in
-                </a>
+                </Link>
               </p>
             </div>
           </div>

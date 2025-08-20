@@ -1,7 +1,8 @@
 import { useContext, useState, useRef, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link, useLocation, NavLink as RouterNavLink } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { db } from '../data/firebase';
+import { db, auth } from '../data/firebase';
+import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import DarkModeButton from './DarkModeButton';
 import { useOnClickOutside } from '../hooks/useOnClickOutside';
@@ -44,42 +45,40 @@ const Navbar: React.FC = () => {
   }, [isMobileMenuOpen]);
 
   useEffect(() => {
-    const fetchUserName = async () => {
-      if (context?.user?.id) {
-        const userDoc = await getDoc(doc(db, 'users', context.user.id));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setUserName(userData.name || context.user.name || 'User');
-        } else {
-          setUserName(context.user.name || 'User');
-        }
-      }
-    };
-    fetchUserName();
+    if (context?.user?.name) {
+      setUserName(context.user.name);
+    }
   }, [context?.user]);
 
   if (!context) return null;
   const { user, setUser } = context;
 
-  const handleLogout = () => {
-    if (context && setUser) {
-      setUser(null);
-      setIsDropdownOpen(false);
-      setIsMobileMenuOpen(false);
-      navigate('/login');
+  const handleLogout = async () => {
+    if (setUser) {
+      try {
+        await signOut(auth); // Sign out from Firebase
+        // The onAuthStateChanged listener in AppContext will handle setting user to null
+        setIsDropdownOpen(false);
+        setIsMobileMenuOpen(false);
+        navigate('/login');
+      } catch (error) {
+        console.error("Error signing out: ", error);
+      }
     }
   };
 
   const NavLink = ({ to, children, onClick }: { to: string; children: React.ReactNode; onClick?: () => void }) => (
-    <Link
+    <RouterNavLink
       to={to}
       onClick={onClick}
-      className={`text-gray-800 hover:text-ayurGreen dark:text-white dark:hover:text-ayurGreen transition-colors duration-200 font-medium ${
-        location.pathname === to ? 'text-ayurGreen dark:text-ayurBeige' : ''
-      }`}
+      className={({ isActive }) =>
+        `text-gray-800 hover:text-ayurGreen dark:text-white dark:hover:text-ayurBeige transition-colors duration-200 font-medium ${
+          isActive ? 'text-ayurGreen dark:text-ayurBeige' : ''
+        }`
+      }
     >
       {children}
-    </Link>
+    </RouterNavLink>
   );
 
   return (
@@ -90,7 +89,7 @@ const Navbar: React.FC = () => {
           <div className="hidden md:flex space-x-6">
             <NavLink to="/">Home</NavLink>
             <NavLink to="/quiz">Quiz</NavLink>
-            <NavLink to="/dashboard">Dashboard</NavLink>
+            {user && <NavLink to="/dashboard">Dashboard</NavLink>}
           </div>
         </div>
         
@@ -101,7 +100,7 @@ const Navbar: React.FC = () => {
             {user ? (
               <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center space-x-2 p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-ayurGreen focus:ring-offset-2 dark:focus:ring-offset-gray-800">
-                  <div className="w-10 h-10 rounded-full bg-ayurGreen flex items-center justify-center text-white font-bold text-lg">{userName ? userName[0].toUpperCase() : 'U'}</div>
+                  <div className="w-10 h-10 rounded-full bg-ayurGreen flex items-center justify-center text-white font-bold text-lg">{userName ? userName[0].toUpperCase() : <UserCircleIcon className="w-6 h-6"/>}</div>
                   <ChevronDownIcon className={`h-5 w-5 text-gray-800 dark:text-white transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 <AnimatePresence>
@@ -112,13 +111,13 @@ const Navbar: React.FC = () => {
                         <p className="font-semibold text-gray-800 dark:text-white truncate">{userName}</p>
                       </div>
                       <div className="py-1">
-                        <Link to="/dashboard?view=profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
+                        <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
                           <UserCircleIcon className="h-5 w-5 mr-3" /> Profile
                         </Link>
                         <Link to="/dashboard" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
                           <ChartBarIcon className="h-5 w-5 mr-3" /> Dashboard
                         </Link>
-                        <Link to="/dashboard?view=notifications" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
+                        <Link to="/notifications" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
                           <BellIcon className="h-5 w-5 mr-3" /> Notifications
                         </Link>
                       </div>
@@ -140,8 +139,8 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="md:hidden">
-            <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 rounded-md text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700">
-              <Bars3Icon className="h-6 w-6" />
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 rounded-md text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700">
+              {isMobileMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
             </button>
           </div>
         </div>
@@ -151,18 +150,18 @@ const Navbar: React.FC = () => {
         {isMobileMenuOpen && (
           <motion.div initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: '100%' }} transition={{ duration: 0.3, ease: 'easeInOut' }} className="fixed inset-0 bg-white dark:bg-gray-900 z-[100] flex flex-col p-4">
             <div className="flex justify-between items-center mb-8">
-              <Link to="/"><img src="/src/assets/logo.png" alt="AyurVibe" className="h-20" /></Link>
+              <Link to="/" onClick={() => setIsMobileMenuOpen(false)}><img src="/src/assets/logo.png" alt="AyurVibe" className="h-20" /></Link>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 rounded-md text-gray-800 dark:text-white"><XMarkIcon className="h-7 w-7" /></button>
             </div>
             <nav className="flex flex-col items-center justify-center flex-grow space-y-8 text-2xl">
               <NavLink to="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
               <NavLink to="/quiz" onClick={() => setIsMobileMenuOpen(false)}>Quiz</NavLink>
-              <NavLink to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>Dashboard</NavLink>
+              {user && <NavLink to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>Dashboard</NavLink>}
               
               <div className="w-full border-t border-gray-200 dark:border-gray-700 pt-8 mt-4 flex flex-col items-center space-y-6">
                 {user ? (
                   <>
-                    <NavLink to="/dashboard?view=profile" onClick={() => setIsMobileMenuOpen(false)}>Profile</NavLink>
+                    <NavLink to="/profile" onClick={() => setIsMobileMenuOpen(false)}>Profile</NavLink>
                     <button onClick={handleLogout} className="text-red-600 dark:text-red-400 font-medium">Logout</button>
                   </>
                 ) : (
