@@ -41,13 +41,18 @@ const Register: React.FC = () => {
       setError(t('nameError', { defaultValue: 'Name is required and must be at least 2 characters.' }));
       return false;
     }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim() || !emailRegex.test(email)) {
+
+    // Safe email validation using simple checks instead of a complex regex
+    if (!email.trim()) {
       setError(t('emailError', { defaultValue: 'A valid email is required.' }));
       return false;
     }
-    
+    const emailParts = email.split('@');
+    if (emailParts.length !== 2 || !emailParts[0] || !emailParts[1] || !emailParts[1].includes('.')) {
+      setError(t('emailError', { defaultValue: 'A valid email is required.' }));
+      return false;
+    }
+
     if (password.length < 6) {
       setError(t('passwordError.length', { defaultValue: 'Password must be at least 6 characters long.' }));
       return false;
@@ -73,7 +78,7 @@ const Register: React.FC = () => {
       setError(t('passwordMismatch', { defaultValue: 'Passwords do not match.' }));
       return false;
     }
-    
+
     setError('');
     return true;
   };
@@ -94,7 +99,7 @@ const Register: React.FC = () => {
         email: email,
         createdAt: new Date().toISOString(),
       });
-      
+
       await saveGuestDataToFirebase(newUser.uid);
       navigate('/dashboard');
     } catch (err: any) {
@@ -132,7 +137,7 @@ const Register: React.FC = () => {
       }, { merge: true });
 
       await saveGuestDataToFirebase(googleUser.uid);
-      
+
       navigate('/dashboard');
     } catch (err: any) {
       console.error("Google Registration Error:", err.code);
@@ -158,7 +163,7 @@ const Register: React.FC = () => {
         createdAt: new Date().toISOString(),
         isAnonymous: true,
       }, { merge: true });
-      
+
       await saveGuestDataToFirebase(anonUser.uid);
 
       navigate('/dashboard');
@@ -173,7 +178,7 @@ const Register: React.FC = () => {
   return (
     <div className="bg-gray-50 dark:bg-gray-900 flex items-center justify-center min-h-screen p-4">
       <FloatingLeaves />
-      <div className="w-full md:mt-24 max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
+      <div className="w-full mt-24 max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
         <div className="flex flex-col lg:flex-row-reverse">
           <div className="lg:w-1/2 relative hidden lg:block animate-slideRight">
             <img 
