@@ -28,7 +28,6 @@ const Register: React.FC = () => {
 
   const { user, theme } = context || {};
 
-  // Redirect if user is already logged in
   useEffect(() => {
     if (user) {
       navigate('/dashboard', { replace: true });
@@ -80,6 +79,7 @@ const Register: React.FC = () => {
       await saveGuestDataToFirebase(newUser.uid);
       navigate('/dashboard');
     } catch (err: any) {
+      console.error("Registration Error:", err.code);
       switch (err.code) {
         case 'auth/email-already-in-use':
           setError(t('registerError.emailInUse', { defaultValue: 'This email address is already in use.' }));
@@ -116,7 +116,10 @@ const Register: React.FC = () => {
       
       navigate('/dashboard');
     } catch (err: any) {
-      if (err.code !== 'auth/popup-closed-by-user') {
+      console.error("Google Registration Error:", err.code);
+      if (err.code === 'auth/account-exists-with-different-credential') {
+        setError(t('registerError.googleDiffCredential', { defaultValue: 'An account already exists with this email address. Please log in with your original method.' }));
+      } else if (err.code !== 'auth/popup-closed-by-user') {
         setError(t('registerError.google', { defaultValue: 'Google registration failed. Please try again.' }));
       }
     } finally {
@@ -141,6 +144,7 @@ const Register: React.FC = () => {
 
       navigate('/dashboard');
     } catch (err: any) {
+      console.error("Anonymous Login Error:", err.code);
       setError(t('anonymousError', { defaultValue: 'Anonymous login failed. Please try again.' }));
     } finally {
       setIsAnonymousLoading(false);
