@@ -34,7 +34,6 @@ const Login: React.FC = () => {
 
   const { user, theme } = context || {};
 
-  // Redirect if user is already logged in
   useEffect(() => {
     if (user) {
       navigate('/dashboard', { replace: true });

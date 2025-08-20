@@ -1,10 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+// CHANGE: Combined imports from 'react-router-dom' into a single line.
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { GoogleAuthProvider, signInWithPopup, signInAnonymously } from 'firebase/auth';
 import { auth, db } from '../data/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
 import { saveGuestDataToFirebase } from '../utils/guestUtils';
 import { UserCircleIcon } from '@heroicons/react/24/solid';
 import FloatingLeaves from '@/components/FloatingLeaves';
@@ -59,7 +59,11 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
       await saveGuestDataToFirebase(user.uid);
       navigate('/dashboard');
     } catch (err: any) {
-      if (err.code !== 'auth/popup-closed-by-user') {
+      // CHANGE: Expanded error handling for Google Auth
+      console.error("Google Auth Error:", err.code);
+      if (err.code === 'auth/account-exists-with-different-credential') {
+        setError(t('loginError.googleDiffCredential', { defaultValue: 'An account already exists with this email address. Please log in with the original method.' }));
+      } else if (err.code !== 'auth/popup-closed-by-user') {
         setError(t('loginError.google', { defaultValue: 'Google authentication failed. Please try again.' }));
       }
     } finally {
@@ -81,6 +85,8 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
       await saveGuestDataToFirebase(user.uid);
       navigate('/dashboard');
     } catch (err: any) {
+      // CHANGE: Expanded error handling for Anonymous login
+      console.error("Anonymous Login Error:", err.code);
       setError(t('anonymousError', { defaultValue: 'Anonymous login failed. Please try again.' }));
     } finally {
       setIsAnonymousLoading(false);
@@ -117,7 +123,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
               </div>
             )}
             
-            {children} {/* This is where the unique form fields will go */}
+            {children}
 
             <div className="text-center mt-6">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 relative before:content-[''] before:absolute before:left-0 before:top-1/2 before:w-[40%] before:h-[1px] before:bg-gray-300 dark:before:bg-gray-600 after:content-[''] after:absolute after:right-0 after:top-1/2 after:w-[40%] after:h-[1px] after:bg-gray-300 dark:after:bg-gray-600">OR</p>
