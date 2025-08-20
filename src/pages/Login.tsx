@@ -32,6 +32,15 @@ const Login: React.FC = () => {
   const [isAnonymousLoading, setIsAnonymousLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
+  const { user, theme } = context || {};
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
+
   useEffect(() => {
     const rememberedEmail = localStorage.getItem('rememberedEmail');
     if (rememberedEmail) {
@@ -41,7 +50,6 @@ const Login: React.FC = () => {
   }, []);
 
   if (!context) return null;
-  const { theme } = context;
 
   const validateForm = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -65,7 +73,7 @@ const Login: React.FC = () => {
       await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
       
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const loggedInUser = userCredential.user;
 
       if (rememberMe) {
         localStorage.setItem('rememberedEmail', email);
@@ -73,22 +81,11 @@ const Login: React.FC = () => {
         localStorage.removeItem('rememberedEmail');
       }
 
-      await saveGuestDataToFirebase(user.uid);
+      await saveGuestDataToFirebase(loggedInUser.uid);
       navigate('/dashboard');
 
     } catch (err: any) {
-      // CHANGE: Expanded error handling for more specific user feedback
-      console.error("Login Error:", err.code);
-      switch (err.code) {
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-        case 'auth/invalid-credential':
-          setError(t('loginError.invalidCredentials', { defaultValue: "Invalid email or password. Please try again." }));
-          break;
-        default:
-          setError(t('loginError.generic', { defaultValue: "An unexpected error occurred. Please try again." }));
-          break;
-      }
+      setError(t('loginError.invalidCredentials', { defaultValue: "Invalid email or password. Please try again." }));
     } finally {
       setIsLoading(false);
     }
@@ -99,22 +96,20 @@ const Login: React.FC = () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const userDocRef = doc(db, 'users', user.uid);
+      const googleUser = result.user;
+      const userDocRef = doc(db, 'users', googleUser.uid);
       const userDoc = await getDoc(userDocRef);
       if (!userDoc.exists()) {
         await setDoc(userDocRef, {
-          name: user.displayName || 'Google User',
-          email: user.email || '',
+          name: googleUser.displayName || 'Google User',
+          email: googleUser.email || '',
           createdAt: new Date().toISOString(),
         });
       }
       
-      await saveGuestDataToFirebase(user.uid);
+      await saveGuestDataToFirebase(googleUser.uid);
       navigate('/dashboard');
     } catch (err: any) {
-      // CHANGE: Expanded error handling for Google login
-      console.error("Google Login Error:", err.code);
       if (err.code !== 'auth/popup-closed-by-user') {
         setError(t('loginError.google', { defaultValue: 'Google login failed. Please try again.' }));
       }
@@ -127,20 +122,18 @@ const Login: React.FC = () => {
     setIsAnonymousLoading(true);
     try {
       const result = await signInAnonymously(auth);
-      const user = result.user;
+      const anonUser = result.user;
 
-      await setDoc(doc(db, 'users', user.uid), {
+      await setDoc(doc(db, 'users', anonUser.uid), {
         name: 'Anonymous User',
         email: '',
         createdAt: new Date().toISOString(),
         isAnonymous: true,
       }, { merge: true });
 
-      await saveGuestDataToFirebase(user.uid);
+      await saveGuestDataToFirebase(anonUser.uid);
       navigate('/dashboard');
     } catch (err: any) {
-      // CHANGE: Expanded error handling for anonymous login
-      console.error("Anonymous Login Error:", err.code);
       setError(t('anonymousError', { defaultValue: 'Anonymous login failed. Please try again.' }));
     } finally {
       setIsAnonymousLoading(false);

@@ -101,7 +101,7 @@ const ProfileView: React.FC = () => {
       <FloatingLeaves />
       
       <motion.div 
-        className="max-w-5xl w-full mx-auto relative z-10"
+        className="max-w-5xl mt-24 md:mt-0 w-full mx-auto relative z-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}

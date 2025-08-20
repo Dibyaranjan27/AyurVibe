@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, signInAnonymously } from 'firebase/auth';
@@ -26,11 +26,37 @@ const Register: React.FC = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAnonymousLoading, setIsAnonymousLoading] = useState(false);
 
+  const { user, theme } = context || {};
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
+
   if (!context) return null;
-  const { theme } = context;
 
   const validateForm = () => {
-    // ... (validation logic remains the same)
+    if (!name.trim() || name.length < 2) {
+      setError(t('nameError', { defaultValue: 'Name is required and must be at least 2 characters.' }));
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email)) {
+      setError(t('emailError', { defaultValue: 'A valid email is required.' }));
+      return false;
+    }
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    if (!password || !passwordRegex.test(password)) {
+      setError(t('passwordError', { defaultValue: 'Password must be at least 6 characters and include uppercase, lowercase, number, and special character (e.g., !@#$%).' }));
+      return false;
+    }
+    if (!confirmPassword || password !== confirmPassword) {
+      setError(t('passwordMismatch', { defaultValue: 'Passwords do not match.' }));
+      return false;
+    }
+    setError('');
     return true;
   };
 
@@ -41,21 +67,19 @@ const Register: React.FC = () => {
     setIsLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const newUser = userCredential.user;
 
-      await updateProfile(user, { displayName: name });
+      await updateProfile(newUser, { displayName: name });
 
-      await setDoc(doc(db, 'users', user.uid), {
+      await setDoc(doc(db, 'users', newUser.uid), {
         name: name,
         email: email,
         createdAt: new Date().toISOString(),
       });
       
-      await saveGuestDataToFirebase(user.uid);
+      await saveGuestDataToFirebase(newUser.uid);
       navigate('/dashboard');
     } catch (err: any) {
-      // CHANGE: Expanded error handling for more specific user feedback
-      console.error("Registration Error:", err.code);
       switch (err.code) {
         case 'auth/email-already-in-use':
           setError(t('registerError.emailInUse', { defaultValue: 'This email address is already in use.' }));
@@ -80,19 +104,18 @@ const Register: React.FC = () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+      const googleUser = result.user;
 
-      await setDoc(doc(db, 'users', user.uid), {
-        name: user.displayName || 'Google User',
-        email: user.email || '',
+      await setDoc(doc(db, 'users', googleUser.uid), {
+        name: googleUser.displayName || 'Google User',
+        email: googleUser.email || '',
         createdAt: new Date().toISOString(),
       }, { merge: true });
 
-      await saveGuestDataToFirebase(user.uid);
+      await saveGuestDataToFirebase(googleUser.uid);
+      
       navigate('/dashboard');
     } catch (err: any) {
-      // CHANGE: Expanded error handling for Google login
-      console.error("Google Registration Error:", err.code);
       if (err.code !== 'auth/popup-closed-by-user') {
         setError(t('registerError.google', { defaultValue: 'Google registration failed. Please try again.' }));
       }
@@ -105,20 +128,19 @@ const Register: React.FC = () => {
     setIsAnonymousLoading(true);
     try {
       const result = await signInAnonymously(auth);
-      const user = result.user;
+      const anonUser = result.user;
 
-      await setDoc(doc(db, 'users', user.uid), {
+      await setDoc(doc(db, 'users', anonUser.uid), {
         name: 'Anonymous User',
         email: '',
         createdAt: new Date().toISOString(),
         isAnonymous: true,
       }, { merge: true });
       
-      await saveGuestDataToFirebase(user.uid);
+      await saveGuestDataToFirebase(anonUser.uid);
+
       navigate('/dashboard');
     } catch (err: any) {
-      // CHANGE: Expanded error handling for anonymous login
-      console.error("Anonymous Login Error:", err.code);
       setError(t('anonymousError', { defaultValue: 'Anonymous login failed. Please try again.' }));
     } finally {
       setIsAnonymousLoading(false);

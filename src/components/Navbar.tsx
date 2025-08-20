@@ -13,11 +13,10 @@ import {
   ChevronDownIcon,
   Bars3Icon,
   XMarkIcon,
+  ChatBubbleBottomCenterTextIcon
 } from '@heroicons/react/24/solid';
 import DarkModeButton from './DarkModeButton';
 
-// CHANGE: Moved the NavLink component definition out of the parent component.
-// It now uses the 'isActive' property from RouterNavLink for styling, which is more efficient.
 const NavLink = ({ to, children, onClick }: { to: string; children: React.ReactNode; onClick?: () => void }) => (
   <RouterNavLink
     to={to}
@@ -35,8 +34,6 @@ const NavLink = ({ to, children, onClick }: { to: string; children: React.ReactN
 const Navbar: React.FC = () => {
   const context = useContext(AppContext);
   const navigate = useNavigate();
-  
-  // CHANGE: Removed the unused 'location' variable and 'useLocation' hook.
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -114,6 +111,7 @@ const Navbar: React.FC = () => {
                         <p className="font-semibold text-gray-800 dark:text-white truncate">{userName}</p>
                       </div>
                       <div className="py-1">
+                        {/* CHANGE: Updated dropdown links to use correct paths */}
                         <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
                           <UserCircleIcon className="h-5 w-5 mr-3" /> Profile
                         </Link>
@@ -122,6 +120,9 @@ const Navbar: React.FC = () => {
                         </Link>
                         <Link to="/notifications" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
                           <BellIcon className="h-5 w-5 mr-3" /> Notifications
+                        </Link>
+                        <Link to="/feedback" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
+                          <ChatBubbleBottomCenterTextIcon className="h-5 w-5 mr-3" /> Feedback
                         </Link>
                       </div>
                       <div className="py-1 border-t border-gray-200 dark:border-gray-700">
@@ -165,6 +166,9 @@ const Navbar: React.FC = () => {
                 {user ? (
                   <>
                     <NavLink to="/profile" onClick={() => setIsMobileMenuOpen(false)}>Profile</NavLink>
+                    {/* CHANGE: Added Notifications and Feedback links to the mobile menu */}
+                    <NavLink to="/notifications" onClick={() => setIsMobileMenuOpen(false)}>Notifications</NavLink>
+                    <NavLink to="/feedback" onClick={() => setIsMobileMenuOpen(false)}>Feedback</NavLink>
                     <button onClick={handleLogout} className="text-red-600 dark:text-red-400 font-medium">Logout</button>
                   </>
                 ) : (
