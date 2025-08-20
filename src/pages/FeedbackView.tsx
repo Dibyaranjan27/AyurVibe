@@ -6,7 +6,7 @@ import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
 import { PaperAirplaneIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../data/firebase'; // Ensure this path matches your Firebase config
+import { db } from '../data/firebase';
 
 const FeedbackView: React.FC = () => {
     const context = useContext(AppContext);
@@ -14,7 +14,7 @@ const FeedbackView: React.FC = () => {
 
     const [name, setName] = useState(user?.name || '');
     const [email, setEmail] = useState(user?.email || '');
-    const [category, setCategory] = useState('General');
+    const [category, setCategory] = useState('General Feedback'); // Set a default value
     const [rating, setRating] = useState(0);
     const [message, setMessage] = useState('');
     
@@ -24,8 +24,12 @@ const FeedbackView: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!message || rating === 0) {
-            alert('Please provide a rating and a message.');
+        if (rating === 0) {
+            setError('Please provide a rating.');
+            return;
+        }
+        if (!message) {
+            setError('Please provide a message.');
             return;
         }
 
@@ -34,12 +38,13 @@ const FeedbackView: React.FC = () => {
 
         try {
             await addDoc(collection(db, 'feedback'), {
-                name,
-                email,
+                name: name || 'Anonymous', // Handle empty name
+                email: email || 'No email', // Handle empty email
                 category,
                 rating,
                 message,
                 submittedAt: serverTimestamp(),
+                userId: user?.id || null, // Optionally store user ID
             });
             setIsSubmitted(true);
         } catch (err) {
@@ -68,7 +73,7 @@ const FeedbackView: React.FC = () => {
     }
     
     return (
-        <div className="relative min-h-screen bg-gray-200 dark:bg-gray-900 flex items-center justify-center p-4 overflow-hidden pb-20">
+        <div className="relative min-h-screen bg-gray-200 dark:bg-gray-900 flex items-center justify-center p-4 overflow-hidden">
             <FloatingLeaves />
             <motion.div 
                 className="relative z-10 w-full max-w-lg sm:max-w-xl"
@@ -86,11 +91,11 @@ const FeedbackView: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Name</label>
-                                <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} required className="mt-1 w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-ayurGreen dark:focus:ring-ayurBeige text-gray-900 dark:text-gray-100"/>
+                                <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} className="mt-1 w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-ayurGreen dark:focus:ring-ayurBeige text-gray-900 dark:text-gray-100"/>
                             </div>
                             <div>
                                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Email</label>
-                                <input type="email" id="email" value={email} onChange={e => setEmail(e.target.value)} required className="mt-1 w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-ayurGreen dark:focus:ring-ayurBeige text-gray-900 dark:text-gray-100"/>
+                                <input type="email" id="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-1 w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-ayurGreen dark:focus:ring-ayurBeige text-gray-900 dark:text-gray-100"/>
                             </div>
                         </div>
 
@@ -103,26 +108,35 @@ const FeedbackView: React.FC = () => {
                                 <option>Quiz & Results</option>
                             </select>
                         </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">How would you rate your experience?</label>
+                        
+                        {/* CHANGE: Replaced the inaccessible label/button group with a semantically correct fieldset */}
+                        <fieldset>
+                            <legend className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                                How would you rate your experience?
+                            </legend>
                             <div className="mt-2 flex items-center space-x-2">
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                        type="button"
-                                        key={star}
-                                        onClick={() => setRating(star)}
-                                        className="focus:outline-none"
-                                    >
-                                        {star <= rating ? (
-                                            <StarSolid className="w-8 h-8 text-yellow-400 transition-all duration-200 hover:scale-110" />
-                                        ) : (
-                                            <StarOutline className="w-8 h-8 text-gray-400 dark:text-gray-500 transition-all duration-200 hover:scale-110" />
-                                        )}
-                                    </button>
+                                    <React.Fragment key={star}>
+                                        <input
+                                            type="radio"
+                                            id={`star-${star}`}
+                                            name="rating"
+                                            value={star}
+                                            checked={rating === star}
+                                            onChange={() => setRating(star)}
+                                            className="sr-only" // This class visually hides the input
+                                        />
+                                        <label htmlFor={`star-${star}`} className="cursor-pointer">
+                                            {star <= rating ? (
+                                                <StarSolid className="w-8 h-8 text-yellow-400 transition-all duration-200 hover:scale-110" />
+                                            ) : (
+                                                <StarOutline className="w-8 h-8 text-gray-400 dark:text-gray-500 transition-all duration-200 hover:scale-110" />
+                                            )}
+                                        </label>
+                                    </React.Fragment>
                                 ))}
                             </div>
-                        </div>
+                        </fieldset>
 
                         <div>
                             <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Message</label>
@@ -137,7 +151,7 @@ const FeedbackView: React.FC = () => {
                             <PaperAirplaneIcon className="w-5 h-5" />
                             {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
                         </button>
-                        {error && <p className="text-red-500 text-center">{error}</p>}
+                        {error && <p className="text-red-500 text-center text-sm">{error}</p>}
                     </form>
                     <div className="mt-6 border-t border-gray-300 dark:border-gray-600 pt-4 text-center text-sm text-gray-500 dark:text-gray-400">
                         Your feedback helps us grow. Thank you!
