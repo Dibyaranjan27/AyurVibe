@@ -10,7 +10,6 @@ import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
 import FloatingLeaves from '../components/FloatingLeaves';
 
 const Quiz: React.FC = () => {
-  // --- All Hooks are now at the top of the component ---
   const navigate = useNavigate();
   const { t } = useTranslation();
   const context = useContext(AppContext);
@@ -21,7 +20,6 @@ const Quiz: React.FC = () => {
   const [customText, setCustomText] = useState<string>('');
   const [isOtherSelected, setIsOtherSelected] = useState<boolean>(false);
 
-  // Safely destructure context after the hook call
   const { user, setUser } = context || {};
 
   useEffect(() => {
@@ -43,9 +41,8 @@ const Quiz: React.FC = () => {
     }
   }, [currentQuestion, answers]);
 
-  // --- Conditional returns are now AFTER all hooks ---
   if (!context) {
-    return null; // Or a loading spinner
+    return null;
   }
 
   const handleNext = () => {
@@ -97,12 +94,12 @@ const Quiz: React.FC = () => {
     const secondaryDosha = sortedDoshas[1] || 'Pitta';
     const prakriti = doshaCounts.Vata === doshaCounts.Pitta && doshaCounts.Pitta === doshaCounts.Kapha ? 'Tridoshic' : `${primaryDosha}-${secondaryDosha}`;
 
-    // CHANGE: Used optional chaining for a cleaner check
     if (user?.id) {
       await saveQuizAnswers(user.id, answers, prakriti);
       const updatedDoc = await getDoc(doc(db, 'users', user.id));
       if (updatedDoc.exists()) {
-        const updatedData = updatedDoc.data() as typeof user;
+        // CHANGE: Removed the unnecessary type assertion
+        const updatedData = updatedDoc.data();
         if (setUser) {
           setUser({ ...user, prakriti: updatedData.prakriti });
         }
@@ -171,7 +168,6 @@ const Quiz: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                {/* CHANGE: Using option.text as the key instead of index */}
                 {currentQuestionData.options.map((option) => (
                   <button
                     key={option.text}

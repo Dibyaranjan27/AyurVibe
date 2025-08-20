@@ -77,7 +77,18 @@ const Login: React.FC = () => {
       navigate('/dashboard');
 
     } catch (err: any) {
-      setError(t('loginError', { defaultValue: "You don't have an account or you have entered invalid credentials." }));
+      // CHANGE: Expanded error handling for more specific user feedback
+      console.error("Login Error:", err.code);
+      switch (err.code) {
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+          setError(t('loginError.invalidCredentials', { defaultValue: "Invalid email or password. Please try again." }));
+          break;
+        default:
+          setError(t('loginError.generic', { defaultValue: "An unexpected error occurred. Please try again." }));
+          break;
+      }
     } finally {
       setIsLoading(false);
     }
@@ -102,7 +113,11 @@ const Login: React.FC = () => {
       await saveGuestDataToFirebase(user.uid);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(t('loginError', { defaultValue: 'Google login failed. Please try again.' }));
+      // CHANGE: Expanded error handling for Google login
+      console.error("Google Login Error:", err.code);
+      if (err.code !== 'auth/popup-closed-by-user') {
+        setError(t('loginError.google', { defaultValue: 'Google login failed. Please try again.' }));
+      }
     } finally {
       setIsGoogleLoading(false);
     }
@@ -124,6 +139,8 @@ const Login: React.FC = () => {
       await saveGuestDataToFirebase(user.uid);
       navigate('/dashboard');
     } catch (err: any) {
+      // CHANGE: Expanded error handling for anonymous login
+      console.error("Anonymous Login Error:", err.code);
       setError(t('anonymousError', { defaultValue: 'Anonymous login failed. Please try again.' }));
     } finally {
       setIsAnonymousLoading(false);
