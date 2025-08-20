@@ -26,7 +26,9 @@ const Register: React.FC = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAnonymousLoading, setIsAnonymousLoading] = useState(false);
 
-  const { user, theme } = context ?? {};
+  // CHANGE: Used optional chaining to access properties from the context.
+  const user = context?.user;
+  const theme = context?.theme;
 
   useEffect(() => {
     if (user) {
@@ -41,14 +43,9 @@ const Register: React.FC = () => {
       setError(t('nameError', { defaultValue: 'Name is required and must be at least 2 characters.' }));
       return false;
     }
-
-    // Safe email validation using simple checks instead of a complex regex
-    if (!email.trim()) {
-      setError(t('emailError', { defaultValue: 'A valid email is required.' }));
-      return false;
-    }
-    const emailParts = email.split('@');
-    if (emailParts.length !== 2 || !emailParts[0] || !emailParts[1] || !emailParts[1].includes('.')) {
+    
+    // This simple check is safer against ReDoS than a complex regex.
+    if (!email.trim() || !email.includes('@') || !email.includes('.')) {
       setError(t('emailError', { defaultValue: 'A valid email is required.' }));
       return false;
     }
@@ -178,7 +175,7 @@ const Register: React.FC = () => {
   return (
     <div className="bg-gray-50 dark:bg-gray-900 flex items-center justify-center min-h-screen p-4">
       <FloatingLeaves />
-      <div className="w-full mt-24 max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
+      <div className="w-full max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
         <div className="flex flex-col lg:flex-row-reverse">
           <div className="lg:w-1/2 relative hidden lg:block animate-slideRight">
             <img 
