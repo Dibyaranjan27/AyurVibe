@@ -133,7 +133,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
   return (
     <div className="bg-gray-50 dark:bg-gray-900 flex items-center justify-center min-h-screen p-4">
       <FloatingLeaves />
-      <div className="w-full max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
+      <div className="w-full md:mt-24 max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
         <div className={`flex flex-col ${imageSide === 'left' ? 'lg:flex-row' : 'lg:flex-row-reverse'}`}>
           {imageContent}
           <div className={`w-full lg:w-1/2 p-8 ${imageSide === 'left' ? 'animate-slideRight' : 'animate-slideLeft'}`}>
