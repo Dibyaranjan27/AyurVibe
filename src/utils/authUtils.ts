@@ -1,4 +1,4 @@
-import { auth } from '../data/firebase';
+import { auth, db } from '../data/firebase';
 import {
   createUserWithEmailAndPassword,
   updateProfile,
@@ -11,7 +11,6 @@ import {
   browserLocalPersistence,
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../data/firebase';
 import { saveGuestDataToFirebase } from './guestUtils';
 
 export const registerUser = async (email: string, password: string, name: string) => {

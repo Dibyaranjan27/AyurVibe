@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { loginUser } from '../utils/authUtils';
-import { validateEmail, validatePassword } from '../utils/validationUtils';
+import { validateEmail} from '../utils/validationUtils';
 import { useTranslation } from 'react-i18next';
 import AuthInput from '../components/AuthInput';
 import AuthButton from '../components/AuthButton';
@@ -43,7 +43,8 @@ const Login: React.FC = () => {
       setError(t('emailError', { defaultValue: 'A valid email is required.' }));
       return false;
     }
-    if (!validatePassword(password)) {
+    // Simple password presence check for login
+    if (!password) {
       setError(t('passwordError', { defaultValue: 'Password is required.' }));
       return false;
     }
@@ -61,7 +62,7 @@ const Login: React.FC = () => {
       navigate('/');
     } catch (err: any) {
       console.error("Login Error:", err.code);
-      setError(t('loginError.generic', { defaultValue: 'Login failed. Please try again.' }));
+      setError(t('loginError.generic', { defaultValue: 'Login failed. Invalid credentials.' }));
     } finally {
       setIsLoading(false);
     }
@@ -119,13 +120,16 @@ const Login: React.FC = () => {
             {t('forgotPassword', { defaultValue: 'Forgot Password?' })}
           </Link>
         </div>
+
+        {/* CHANGE: "Login" text is now nested as a child, and redundant onClick is removed. */}
         <AuthButton
-          onClick={handleLogin}
-          children="Login"
           type="submit"
           disabled={isLoading}
           loading={isLoading}
-        />
+        >
+          Login
+        </AuthButton>
+
       </form>
     </AuthLayout>
   );
