@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppContext } from '../context/AppContext';
-import { getDoc, doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../data/firebase';
 import { useTranslation } from 'react-i18next';
 import FloatingLeaves from '../components/FloatingLeaves';

@@ -5,7 +5,6 @@ import {
   BellIcon,
   ChartPieIcon,
   ChatBubbleBottomCenterTextIcon,
-  Cog6ToothIcon,
   HomeIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';

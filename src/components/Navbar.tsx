@@ -1,7 +1,7 @@
 import { useContext, useState, useRef, useEffect } from 'react';
 import { useNavigate, Link, NavLink as RouterNavLink } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { db, auth } from '../data/firebase';
+import { auth } from '../data/firebase';
 import { signOut } from 'firebase/auth';
 import { useOnClickOutside } from '../hooks/useOnClickOutside';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -2,9 +2,8 @@ import React, { useState, useContext } from 'react';
 import { AppContext } from '../context/AppContext';
 import { motion } from 'framer-motion';
 import FloatingLeaves from '../components/FloatingLeaves';
-import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
-import { PaperAirplaneIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
+import { PaperAirplaneIcon, CheckCircleIcon,StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../data/firebase';
 
