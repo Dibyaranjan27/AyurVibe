@@ -1,69 +1,180 @@
-# React + TypeScript + Vite
+# 🌿 AyurVibe ✨
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, personalized Ayurvedic wellness dashboard designed to help you discover your unique mind-body constitution (Prakriti) and cultivate a balanced lifestyle.
 
-Currently, two official plugins are available:
+This application provides users with an interactive quiz to determine their primary Dosha (Vata, Pitta, Kapha) and delivers tailored diet, routine, and lifestyle recommendations based on the results. It features a secure, persistent user authentication system with Firebase and a dynamic dashboard to track wellness goals.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+<div align="center">
+  <img src="https://img.shields.io/badge/react-%2361DAFB.svg?style=for-the-badge&logo=react&logoColor=black" alt="React"/>
+  <img src="https://img.shields.io/badge/typescript-%233178C6.svg?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white" alt="Vite"/>
+  <img src="https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS"/>
+  <img src="https://img.shields.io/badge/firebase-%23FFCA28.svg?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase"/>
+</div>
 
-## Expanding the ESLint configuration
+<div align="center">
+  
+**[➡️ Live Demo Coming Soon! ⬅️]**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+</div>
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
+## ✍️ Author's Note
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+This project was developed as an academic assignment for my college. The entire application was built from scratch in about a week. As a rapid development project, there may be bugs or areas for improvement. 
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+If you find any issues, please feel free to **raise an issue**. If you like the project, please give it a **star ⭐** and consider **forking it 🍴** to explore your own ideas!
+
+---
+
+## 🖥️ Screenshots
+
+<!--<p align="center">
+  <img src="path/to/your/homepage-screenshot.png" alt="AyurVibe Homepage Screenshot" width="700">
+  <br/>
+  <em>Homepage</em>
+</p>
+<p align="center">
+  <img src="path/to/your/quiz-screenshot.png" alt="AyurVibe Quiz Screenshot" width="700">
+  <br/>
+  <em>Interactive Dosha Quiz</em>
+</p>
+<p align="center">
+  <img src="path/to/your/dashboard-screenshot.png" alt="AyurVibe Dashboard Screenshot" width="700">
+  <br/>
+  <em>Personalized User Dashboard</em>
+</p>-->
+
+---
+
+## 📌 Key Features
+
+-   🧘 **Interactive Dosha Quiz:** A comprehensive quiz to accurately determine the user's unique Prakriti.
+-   📊 **Personalized Results:** A detailed results page displaying the Dosha breakdown and key traits.
+-   📝 **Custom Wellness Plans:** Tailored diet, routine, and lifestyle recommendations for each Dosha type.
+-   🔒 **Full Authentication:** Secure user registration and login with Firebase Auth (Email/Password, Google, Anonymous).
+-   👤 **User Dashboard:** A central hub to view wellness streaks, track daily balance, and manage reminders.
+-   ✏️ **Editable User Profiles:** Users can manage their personal and health details derived from the quiz.
+-   🔔 **Real-Time Browser Notifications:** A functional notification system for scheduled reminders.
+-   🌙 **Dark Mode Support:** A sleek, eye-friendly dark theme for comfortable use in low-light environments.
+-   🚀 **Modern & Accessible UI:** Built with a focus on clean design, accessibility, and smooth animations.
+
+---
+
+## 🔮 Future Plans
+
+-   🤖 **AI-Powered Dosha Analysis:** Integrate a Machine Learning model to provide a more dynamic and accurate Dosha determination from the quiz answers.
+-   🧠 **Generative AI for Custom Plans:** Utilize a Large Language Model (LLM) to generate deeply personalized diet and routine plans based on user preferences and goals.
+-   💬 **AI Wellness Chatbot:** Implement an AI-driven chatbot to answer user questions, provide health feedback, and offer encouragement.
+
+---
+
+## 🛠️ Tech Stack
+
+-   **Frontend:** React, TypeScript, Vite
+-   **Styling:** Tailwind CSS
+-   **Animation:** Framer Motion
+-   **Backend & Database:** Firebase (Authentication, Firestore)
+-   **Routing:** React Router
+-   **State Management:** React Context API
+-   **Notifications:** Browser Notification API
+
+---
+
+## 🔧 Requirements
+
+Before running the project, ensure you have the following installed:
+-   Node.js (v18 or higher)
+-   npm or yarn
+
+---
+
+## 🚀 Installation and Usage
+
+### **1. Clone the Repository**
+```sh
+git clone https://github.com/Dibyaranjan27/ayurvibe.git
+cd ayurvibe
+```
+### **2. Install Dependencies**
+```sh
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### **3. Set Up Firebase Environment Variables**
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a .env.local file in the root of the project and add your Firebase project configuration. You can get these from your Firebase project settings.    
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+  `.env.local.example`
+
 ```
+VITE_API_KEY="your-api-key"
+VITE_AUTH_DOMAIN="your-auth-domain"
+VITE_PROJECT_ID="your-project-id"
+VITE_STORAGE_BUCKET="your-storage-bucket"
+VITE_MESSAGING_SENDER_ID="your-messaging-sender-id"
+VITE_APP_ID="your-app-id"
+```
+Rename this file to `.env.local` and fill in your actual Firebase credentials.
+
+### **4. Run the Application**
+```sh
+npm run dev
+```
+The application will be available at `http://localhost:5173/`.
+
+## 📂 File Structure
+
+A brief overview of the project's file structure.
+```
+/ayurvibe
+│
+├── public/                 # Static assets (favicon, etc.)
+├── src/
+│   ├── assets/             # Images used throughout the application
+│   ├── components/         # Reusable UI components (Navbar, Buttons, Cards, etc.)
+│   ├── context/            # React Context providers (AppContext, NotificationsProvider)
+│   ├── data/               # Firebase config, static data (questions, plans)
+│   ├── hooks/              # Custom hooks (useOnClickOutside)
+│   ├── icons/              # Static icons or icon components
+│   ├── pages/              # Top-level page components (Homepage, Login, Dashboard, etc.)
+│   ├── styles/             # Additional global styles
+│   ├── types/              # TypeScript type definitions (e.g., for quiz questions)
+│   ├── utils/              # Utility and helper functions
+│   │
+│   ├── App.tsx             # Main application component with routing
+│   ├── i18n.ts             # Internationalization (i18n) configuration
+│   ├── index.css           # Global CSS and Tailwind directives
+│   └── main.tsx            # The entry point of the React application
+│
+├── .env                    # Firebase environment variables (private)
+├── index.html              # The main HTML file for Vite
+├── package.json            # Project dependencies and scripts
+├── tailwind.config.js      # Tailwind CSS configuration
+├── tsconfig.json           # TypeScript compiler configuration
+└── README.md               # This file
+```
+---
+
+## 🤝 Contribution
+
+Feel free to contribute to this project! Fork the repository, make your improvements, and submit a pull request. All contributions are welcome.
+
+If you have any questions or suggestions, feel free to contact me. I'd be happy to help! 😊
+
+
+## 📜 License
+
+This project is open-source and available under the MIT License.
+
+
+
+## 💡 Author
+
+<p align="center">
+<em>Crafted with pixels & passion by</em>
+<br>
+<strong>Dibyaranjan Maharana</strong>
+<br>
+<a href="https://github.com/Dibyaranjan27">GitHub</a> | <a href="https://www.linkedin.com/in/dibyaranjan-maharana-1228012b2/">LinkedIn</a>
+</p>
