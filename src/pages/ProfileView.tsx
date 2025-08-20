@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppContext } from '../context/AppContext';
-import { doc, updateDoc } from 'firebase/firestore';
+import { getDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../data/firebase';
 import { useTranslation } from 'react-i18next';
 import FloatingLeaves from '../components/FloatingLeaves';
@@ -45,26 +45,72 @@ const ProfileView: React.FC = () => {
   const [prakriti, setPrakriti] = useState<string>('-');
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [showMoreHealth, setShowMoreHealth] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const { user, setUser } = context || {};
 
   useEffect(() => {
-    if (user) {
-      setName(user.name || '');
-      setMobile(user.mobile || '');
-      setHealthDetails(user.healthDetails || {});
-      setPrakriti(user.prakriti || '-');
-    }
-  }, [user]);
+    const fetchUserData = async () => {
+      if (user?.id) {
+        setIsLoading(true);
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.id));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            
+            setName(userData.name || '');
+            setMobile(userData.mobile || '');
+            setPrakriti(userData.prakriti || '-');
+
+            // CHANGE: This logic now correctly reads your 'quizAnswers' object
+            // and maps it to the healthDetails state as you requested.
+            const quizAnswers = userData.quizAnswers || {};
+            const mappedHealthDetails = {
+              bodyFrame: quizAnswers['1']?.text || '',
+              skin: quizAnswers['2']?.text || '',
+              hair: quizAnswers['3']?.text || '',
+              eyes: quizAnswers['4']?.text || '',
+              appetite: quizAnswers['5']?.text || '',
+              sleep: quizAnswers['6']?.text || '',
+              energy: quizAnswers['7']?.text || '',
+              climate: quizAnswers['8']?.text || '',
+              stress: quizAnswers['9']?.text || '',
+              memory: quizAnswers['10']?.text || '',
+              pace: quizAnswers['11']?.text || '',
+              mood: quizAnswers['12']?.text || '',
+              money: quizAnswers['13']?.text || '',
+              communication: quizAnswers['14']?.text || '',
+              change: quizAnswers['15']?.text || '',
+            };
+            setHealthDetails(mappedHealthDetails);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [user?.id]);
 
   if (!context || !user) {
-    return <p className="text-center p-8 text-gray-800 dark:text-gray-200 text-lg font-lora">{t('loginRequired', { defaultValue: 'Please log in to view your profile' })}</p>;
+    return <p className="text-center p-8 text-gray-800 dark:text-gray-200 text-lg font-lora">{t('loginRequired', { defaultValue: 'Please log in' })}</p>;
+  }
+  
+  if (isLoading) {
+    return <div className="text-center p-8 text-gray-800 dark:text-gray-200">Loading Profile...</div>;
   }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (user?.id) {
       try {
+        // NOTE: When saving, we now save the healthDetails object, not quizAnswers.
+        // This assumes that if a user edits a health detail, it's a direct override.
         const updatedData = { name, mobile, healthDetails, prakriti: prakriti === '-' ? null : prakriti };
         await updateDoc(doc(db, 'users', user.id), updatedData);
         if (setUser) {
@@ -82,9 +128,10 @@ const ProfileView: React.FC = () => {
   };
 
   const handleCancel = () => {
+    // Re-sync from the user object in context to discard changes
     setName(user.name || '');
     setMobile(user.mobile || '');
-    setHealthDetails(user.healthDetails || {});
+    setHealthDetails(user.healthDetails || {}); // This will reset to originally loaded details
     setPrakriti(user.prakriti || '-');
     setEditMode(false);
   };
@@ -101,7 +148,7 @@ const ProfileView: React.FC = () => {
       <FloatingLeaves />
       
       <motion.div 
-        className="max-w-5xl mt-24 md:mt-0 w-full mx-auto relative z-10"
+        className="max-w-5xl mb-12 w-full mx-auto relative z-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -130,39 +177,30 @@ const ProfileView: React.FC = () => {
         </div>
 
         <form onSubmit={handleSave}>
-          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 mb-12">
-            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 ">
-              <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('personalInformation', { defaultValue: 'Personal Information' })}</h4>
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 mb-6">
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
+              <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('personalInformation')}</h4>
               {editMode ? (
                 <div className="space-y-4">
-                  <EditableField label={t('fullName', { defaultValue: 'Full Name' })} value={name} onChange={(e) => setName(e.target.value)} />
-                  <EditableField label={t('mobileNumber', { defaultValue: 'Mobile Number' })} value={mobile} onChange={(e) => setMobile(e.target.value)} type="tel" />
+                  <EditableField label={t('fullName')} value={name} onChange={(e) => setName(e.target.value)} />
+                  <EditableField label={t('mobileNumber')} value={mobile} onChange={(e) => setMobile(e.target.value)} type="tel" />
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <InfoRow t={t} icon={<EnvelopeIcon className="w-5 h-5" />} label={t('emailAddress', { defaultValue: 'Email Address' })} value={user.email} />
-                  <InfoRow t={t} icon={<UserCircleIcon className="w-5 h-5" />} label={t('fullName', { defaultValue: 'Full Name' })} value={name} />
-                  <InfoRow t={t} icon={<DevicePhoneMobileIcon className="w-5 h-5" />} label={t('mobileNumber', { defaultValue: 'Mobile Number' })} value={mobile} />
+                  <InfoRow t={t} icon={<EnvelopeIcon className="w-5 h-5" />} label={t('emailAddress')} value={user.email} />
+                  <InfoRow t={t} icon={<UserCircleIcon className="w-5 h-5" />} label={t('fullName')} value={name} />
+                  <InfoRow t={t} icon={<DevicePhoneMobileIcon className="w-5 h-5" />} label={t('mobileNumber')} value={mobile} />
                 </div>
               )}
             </div>
 
             <div className={`flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6`}>
-              <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('healthDetails', { defaultValue: 'Health Details' })}</h4>
-              {editMode ? (
-                <div className="space-y-4">
-                  <EditableField label={t('bodyFrame', { defaultValue: 'Body Frame' })} value={healthDetails.bodyFrame} onChange={(e) => setHealthDetails({ ...healthDetails, bodyFrame: e.target.value })} />
-                  <EditableField label={t('skin', { defaultValue: 'Skin' })} value={healthDetails.skin} onChange={(e) => setHealthDetails({ ...healthDetails, skin: e.target.value })} />
-                  <EditableField label={t('hair', { defaultValue: 'Hair' })} value={healthDetails.hair} onChange={(e) => setHealthDetails({ ...healthDetails, hair: e.target.value })} />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <InfoRow t={t} icon={<UserIcon className="w-5 h-5" />} label={t('bodyFrame', { defaultValue: 'Body Frame' })} value={healthDetails.bodyFrame} />
-                  <InfoRow t={t} icon={<FaceSmileIcon className="w-5 h-5" />} label={t('skin', { defaultValue: 'Skin' })} value={healthDetails.skin} />
-                  <InfoRow t={t} icon={<FaceSmileIcon className="w-5 h-5" />} label={t('hair', { defaultValue: 'Hair' })} value={healthDetails.hair} />
-                </div>
-              )}
-              {/* CHANGE: Restored your original "Show More" button placement */}
+              <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('healthDetails')}</h4>
+              <div className="space-y-2">
+                <InfoRow t={t} icon={<UserIcon className="w-5 h-5" />} label={t('bodyFrame')} value={healthDetails.bodyFrame} />
+                <InfoRow t={t} icon={<FaceSmileIcon className="w-5 h-5" />} label={t('skin')} value={healthDetails.skin} />
+                <InfoRow t={t} icon={<FaceSmileIcon className="w-5 h-5" />} label={t('hair')} value={healthDetails.hair} />
+              </div>
               {!showMoreHealth && (
                 <button
                   type="button"
@@ -175,66 +213,64 @@ const ProfileView: React.FC = () => {
             </div>
 
             <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
-              <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('quizResults', { defaultValue: 'Quiz Results' })}</h4>
-              <InfoRow t={t} icon={<SparklesIcon className="w-5 h-5" />} label={t('yourPrakriti', { defaultValue: 'Your Prakriti' })} value={prakriti} />
+              <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('quizResults')}</h4>
+              <InfoRow t={t} icon={<SparklesIcon className="w-5 h-5" />} label={t('yourPrakriti')} value={prakriti} />
             </div>
           </div>
           
           <AnimatePresence>
-          {showMoreHealth && (
-            <motion.div
-              key="more-health-details"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 mb-12 mt-[-1.5rem] overflow-hidden"
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {editMode ? (
-                  <>
-                    <EditableField label={t('eyes')} value={healthDetails.eyes} onChange={(e) => setHealthDetails({ ...healthDetails, eyes: e.target.value })} />
-                    <EditableField label={t('appetite')} value={healthDetails.appetite} onChange={(e) => setHealthDetails({ ...healthDetails, appetite: e.target.value })} />
-                    <EditableField label={t('sleep')} value={healthDetails.sleep} onChange={(e) => setHealthDetails({ ...healthDetails, sleep: e.target.value })} />
-                    <EditableField label={t('energy')} value={healthDetails.energy} onChange={(e) => setHealthDetails({ ...healthDetails, energy: e.target.value })} />
-                    <EditableField label={t('climate')} value={healthDetails.climate} onChange={(e) => setHealthDetails({ ...healthDetails, climate: e.target.value })} />
-                    <EditableField label={t('stress')} value={healthDetails.stress} onChange={(e) => setHealthDetails({ ...healthDetails, stress: e.target.value })} />
-                    <EditableField label={t('memory')} value={healthDetails.memory} onChange={(e) => setHealthDetails({ ...healthDetails, memory: e.target.value })} />
-                    <EditableField label={t('pace')} value={healthDetails.pace} onChange={(e) => setHealthDetails({ ...healthDetails, pace: e.target.value })} />
-                    <EditableField label={t('mood')} value={healthDetails.mood} onChange={(e) => setHealthDetails({ ...healthDetails, mood: e.target.value })} />
-                    <EditableField label={t('money')} value={healthDetails.money} onChange={(e) => setHealthDetails({ ...healthDetails, money: e.target.value })} />
-                    <EditableField label={t('communication')} value={healthDetails.communication} onChange={(e) => setHealthDetails({ ...healthDetails, communication: e.target.value })} />
-                    <EditableField label={t('change')} value={healthDetails.change} onChange={(e) => setHealthDetails({ ...healthDetails, change: e.target.value })} />
-                  </>
-                ) : (
-                  <>
-                    <InfoRow t={t} icon={<EyeIcon className="w-5 h-5" />} label={t('eyes')} value={healthDetails.eyes} />
-                    <InfoRow t={t} icon={<HeartIcon className="w-5 h-5" />} label={t('appetite')} value={healthDetails.appetite} />
-                    <InfoRow t={t} icon={<ClockIcon className="w-5 h-5" />} label={t('sleep')} value={healthDetails.sleep} />
-                    <InfoRow t={t} icon={<FireIcon className="w-5 h-5" />} label={t('energy')} value={healthDetails.energy} />
-                    <InfoRow t={t} icon={<SunIcon className="w-5 h-5" />} label={t('climate')} value={healthDetails.climate} />
-                    <InfoRow t={t} icon={<BoltIcon className="w-5 h-5" />} label={t('stress')} value={healthDetails.stress} />
-                    <InfoRow t={t} icon={<AcademicCapIcon className="w-5 h-5" />} label={t('memory')} value={healthDetails.memory} />
-                    <InfoRow t={t} icon={<ClockIcon className="w-5 h-5" />} label={t('pace')} value={healthDetails.pace} />
-                    <InfoRow t={t} icon={<FaceSmileIcon className="w-5 h-5" />} label={t('mood')} value={healthDetails.mood} />
-                    <InfoRow t={t} icon={<CurrencyDollarIcon className="w-5 h-5" />} label={t('money')} value={healthDetails.money} />
-                    <InfoRow t={t} icon={<ChatBubbleLeftIcon className="w-5 h-5" />} label={t('communication')} value={healthDetails.communication} />
-                    <InfoRow t={t} icon={<BoltIcon className="w-5 h-5" />} label={t('change')} value={healthDetails.change} />
-                  </>
-                )}
-              </div>
-              {/* CHANGE: Restored your original "Show Less" button placement */}
-              <div className="mt-4 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setShowMoreHealth(false)}
-                  className="flex items-center gap-2 text-ayurGreen dark:text-ayurBeige hover:text-ayurGreen/80 dark:hover:text-ayurBeige/80 font-medium transition-colors"
-                >
-                  <ChevronUpIcon className="w-5 h-5" /> {t('showLess', { defaultValue: 'Show Less' })}
-                </button>
-              </div>
-            </motion.div>
-          )}
+            {showMoreHealth && (
+              <motion.div
+                key="more-health-details"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 mb-6 overflow-hidden"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {editMode ? (
+                    <>
+                      <EditableField label={t('eyes')} value={healthDetails.eyes} onChange={(e) => setHealthDetails({ ...healthDetails, eyes: e.target.value })} />
+                      <EditableField label={t('appetite')} value={healthDetails.appetite} onChange={(e) => setHealthDetails({ ...healthDetails, appetite: e.target.value })} />
+                      <EditableField label={t('sleep')} value={healthDetails.sleep} onChange={(e) => setHealthDetails({ ...healthDetails, sleep: e.target.value })} />
+                      <EditableField label={t('energy')} value={healthDetails.energy} onChange={(e) => setHealthDetails({ ...healthDetails, energy: e.target.value })} />
+                      <EditableField label={t('climate')} value={healthDetails.climate} onChange={(e) => setHealthDetails({ ...healthDetails, climate: e.target.value })} />
+                      <EditableField label={t('stress')} value={healthDetails.stress} onChange={(e) => setHealthDetails({ ...healthDetails, stress: e.target.value })} />
+                      <EditableField label={t('memory')} value={healthDetails.memory} onChange={(e) => setHealthDetails({ ...healthDetails, memory: e.target.value })} />
+                      <EditableField label={t('pace')} value={healthDetails.pace} onChange={(e) => setHealthDetails({ ...healthDetails, pace: e.target.value })} />
+                      <EditableField label={t('mood')} value={healthDetails.mood} onChange={(e) => setHealthDetails({ ...healthDetails, mood: e.target.value })} />
+                      <EditableField label={t('money')} value={healthDetails.money} onChange={(e) => setHealthDetails({ ...healthDetails, money: e.target.value })} />
+                      <EditableField label={t('communication')} value={healthDetails.communication} onChange={(e) => setHealthDetails({ ...healthDetails, communication: e.target.value })} />
+                      <EditableField label={t('change')} value={healthDetails.change} onChange={(e) => setHealthDetails({ ...healthDetails, change: e.target.value })} />
+                    </>
+                  ) : (
+                    <>
+                      <InfoRow t={t} icon={<EyeIcon className="w-5 h-5" />} label={t('eyes')} value={healthDetails.eyes} />
+                      <InfoRow t={t} icon={<HeartIcon className="w-5 h-5" />} label={t('appetite')} value={healthDetails.appetite} />
+                      <InfoRow t={t} icon={<ClockIcon className="w-5 h-5" />} label={t('sleep')} value={healthDetails.sleep} />
+                      <InfoRow t={t} icon={<FireIcon className="w-5 h-5" />} label={t('energy')} value={healthDetails.energy} />
+                      <InfoRow t={t} icon={<SunIcon className="w-5 h-5" />} label={t('climate')} value={healthDetails.climate} />
+                      <InfoRow t={t} icon={<BoltIcon className="w-5 h-5" />} label={t('stress')} value={healthDetails.stress} />
+                      <InfoRow t={t} icon={<AcademicCapIcon className="w-5 h-5" />} label={t('memory')} value={healthDetails.memory} />
+                      <InfoRow t={t} icon={<ClockIcon className="w-5 h-5" />} label={t('pace')} value={healthDetails.pace} />
+                      <InfoRow t={t} icon={<FaceSmileIcon className="w-5 h-5" />} label={t('mood')} value={healthDetails.mood} />
+                      <InfoRow t={t} icon={<CurrencyDollarIcon className="w-5 h-5" />} label={t('money')} value={healthDetails.money} />
+                      <InfoRow t={t} icon={<ChatBubbleLeftIcon className="w-5 h-5" />} label={t('communication')} value={healthDetails.communication} />
+                      <InfoRow t={t} icon={<BoltIcon className="w-5 h-5" />} label={t('change')} value={healthDetails.change} />
+                    </>
+                  )}
+                </div>
+                <div className="mt-4 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowMoreHealth(false)}
+                    className="flex items-center gap-2 text-ayurGreen dark:text-ayurBeige hover:text-ayurGreen/80 dark:hover:text-ayurBeige/80 font-medium transition-colors"
+                  >
+                    <ChevronUpIcon className="w-5 h-5" /> {t('showLess', { defaultValue: 'Show Less' })}
+                  </button>
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
 
           {editMode && (
