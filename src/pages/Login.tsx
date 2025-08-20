@@ -1,7 +1,15 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInAnonymously } from 'firebase/auth';
+import { 
+  signInWithEmailAndPassword, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  signInAnonymously,
+  setPersistence,
+  browserSessionPersistence,
+  browserLocalPersistence
+} from 'firebase/auth';
 import { auth, db } from '../data/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +30,15 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAnonymousLoading, setIsAnonymousLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   if (!context) return null;
   const { theme } = context;
@@ -45,14 +62,20 @@ const Login: React.FC = () => {
 
     setIsLoading(true);
     try {
+      await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+      
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // After successful login, save any pending guest data to their account
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
       await saveGuestDataToFirebase(user.uid);
-      
-      // The onAuthStateChanged listener in AppContext will handle setUser & navigation
       navigate('/dashboard');
+
     } catch (err: any) {
       setError(t('loginError', { defaultValue: "You don't have an account or you have entered invalid credentials." }));
     } finally {
@@ -76,10 +99,7 @@ const Login: React.FC = () => {
         });
       }
       
-      // Save any pending guest data to their account
       await saveGuestDataToFirebase(user.uid);
-
-      // The onAuthStateChanged listener in AppContext will handle setUser & navigation
       navigate('/dashboard');
     } catch (err: any) {
       setError(t('loginError', { defaultValue: 'Google login failed. Please try again.' }));
@@ -94,7 +114,6 @@ const Login: React.FC = () => {
       const result = await signInAnonymously(auth);
       const user = result.user;
 
-      // Ensure a document exists for the anonymous user
       await setDoc(doc(db, 'users', user.uid), {
         name: 'Anonymous User',
         email: '',
@@ -102,10 +121,7 @@ const Login: React.FC = () => {
         isAnonymous: true,
       }, { merge: true });
 
-      // Save any pending guest data to their new anonymous account
       await saveGuestDataToFirebase(user.uid);
-
-      // The onAuthStateChanged listener will handle setUser & navigation
       navigate('/dashboard');
     } catch (err: any) {
       setError(t('anonymousError', { defaultValue: 'Anonymous login failed. Please try again.' }));
@@ -148,6 +164,7 @@ const Login: React.FC = () => {
                   placeholder="Email Address"
                   className="w-full pl-10 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-ayurGreen dark:focus:border-ayurGreen/70 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   disabled={isLoading}
+                  maxLength={128}
                 />
                 <Mail className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
               </div>
@@ -159,6 +176,7 @@ const Login: React.FC = () => {
                   placeholder="Password"
                   className="w-full pl-10 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-ayurGreen dark:focus:border-ayurGreen/70 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   disabled={isLoading}
+                  maxLength={128}
                 />
                 <Lock className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
                 <button 
@@ -176,6 +194,8 @@ const Login: React.FC = () => {
                     type="checkbox"
                     className="w-4 h-4 text-ayurGreen focus:ring-ayurGreen"
                     disabled={isLoading}
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                   />
                   <span className="text-sm text-gray-600 dark:text-gray-400">Remember me</span>
                 </label>

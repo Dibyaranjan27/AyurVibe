@@ -1,11 +1,10 @@
-// src/components/DoshaExplanationCard.tsx
 import { motion } from 'framer-motion';
 
 interface Props {
   dosha: 'Vata' | 'Pitta' | 'Kapha';
   score: number;
   answers: string[];
-  imageSrc: string; // <-- Changed from emoji to imageSrc
+  imageSrc: string;
   className?: string;
 }
 
@@ -19,7 +18,6 @@ const DoshaExplanationCard: React.FC<Props> = ({ dosha, score, answers, imageSrc
       }}
     >
       <div className="flex items-center mb-4">
-        {/* Using your custom image now */}
         <img src={imageSrc} alt={dosha} className="w-16 h-16 rounded-full mr-4 object-cover border-2 border-white/50" />
         <div>
           <h4 className="text-2xl font-lora font-bold text-gray-800 dark:text-white">{dosha}</h4>
@@ -29,8 +27,9 @@ const DoshaExplanationCard: React.FC<Props> = ({ dosha, score, answers, imageSrc
       <div className="flex-grow space-y-2 text-sm text-gray-700 dark:text-gray-300">
         <p className="font-semibold mb-2">Your traits reflecting {dosha}:</p>
         <ul className="space-y-1 pl-1 list-inside">
-          {answers.map((answer, index) => (
-            <li key={index} className="flex items-start">
+          {/* CHANGE: Using the 'answer' string for a stable key instead of index */}
+          {answers.map((answer) => (
+            <li key={answer} className="flex items-start">
               <span className="mr-2 mt-1 text-sm text-ayurGreen">&#10003;</span>
               <span>{answer}</span>
             </li>

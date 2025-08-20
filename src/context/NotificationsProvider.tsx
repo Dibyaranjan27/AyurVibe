@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { db } from '../data/firebase'; // Your Firebase config
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
+import { db } from '../data/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { useNotifications } from '../data/useNotifications'; // The hook you provided
-import { AppContext } from './AppContext'; // Assuming you have an AppContext for the user
+import { useNotifications } from '../data/useNotifications';
+import { AppContext } from './AppContext';
 
 interface Reminder {
   id: number;
@@ -30,11 +30,12 @@ export const useAppNotifications = () => {
 };
 
 export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useContext(AppContext);
+  const context = useContext(AppContext);
+  const user = context?.user; // Safely access user
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const { scheduleNotification, permission } = useNotifications();
 
-  // Load reminders from Firebase on user login
+  // Load reminders from Firebase
   useEffect(() => {
     const loadData = async () => {
       if (user?.id) {
@@ -48,6 +49,9 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
           }));
           setReminders(formattedReminders);
         }
+      } else {
+        // Clear reminders if user logs out
+        setReminders([]);
       }
     };
     loadData();
@@ -55,18 +59,18 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
 
   // Update Firebase whenever reminders change
   useEffect(() => {
+    // Prevent writing to DB on initial empty load
+    if (!user?.id || reminders.length === 0) return;
+
     const updateFirebase = async () => {
-      if (user?.id) {
-        const userDoc = doc(db, 'users', user.id);
-        await updateDoc(userDoc, { reminders });
-      }
+      const userDoc = doc(db, 'users', user.id);
+      await updateDoc(userDoc, { reminders });
     };
-    if (reminders.length > 0) { // Only update if there's something to update
-      updateFirebase();
-    }
+    updateFirebase();
   }, [reminders, user?.id]);
 
-  const addReminder = (newReminderData: Omit<Reminder, 'id' | 'completed'>) => {
+  // CHANGE: Wrap functions in useCallback to give them a stable identity
+  const addReminder = useCallback((newReminderData: Omit<Reminder, 'id' | 'completed'>) => {
     const newReminderObject = {
       ...newReminderData,
       id: Date.now(),
@@ -74,24 +78,32 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     };
     setReminders(prev => [...prev, newReminderObject]);
     
-    // Schedule a real browser notification
     if (newReminderObject.dateTime) {
       scheduleNotification({ text: newReminderObject.text, dateTime: newReminderObject.dateTime });
     }
-  };
+  }, [scheduleNotification]);
 
-  const toggleReminder = (id: number) => {
+  const toggleReminder = useCallback((id: number) => {
     setReminders(prev =>
       prev.map(r => (r.id === id ? { ...r, completed: !r.completed } : r))
     );
-  };
+  }, []);
 
-  const deleteReminder = (id: number) => {
+  const deleteReminder = useCallback((id: number) => {
     setReminders(prev => prev.filter(r => r.id !== id));
-  };
+  }, []);
+
+  // CHANGE: Wrap the context value object in useMemo
+  const value = useMemo(() => ({
+    reminders,
+    addReminder,
+    toggleReminder,
+    deleteReminder,
+    permission
+  }), [reminders, addReminder, toggleReminder, deleteReminder, permission]);
 
   return (
-    <NotificationsContext.Provider value={{ reminders, addReminder, toggleReminder, deleteReminder, permission }}>
+    <NotificationsContext.Provider value={value}>
       {children}
     </NotificationsContext.Provider>
   );

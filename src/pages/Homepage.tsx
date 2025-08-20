@@ -5,8 +5,6 @@ import { AppContext } from "../context/AppContext";
 import Navbar from "../components/Navbar";
 import PageUpButton from "../components/PageUpButton";
 import FloatingLeaves from "../components/FloatingLeaves";
-
-// Import the LazyLoadImage component and its CSS for the blur effect
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import 'react-lazy-load-image-component/src/effects/blur.css';
 
@@ -33,7 +31,6 @@ const Homepage: React.FC = () => {
 
     if (!context) return null;
 
-    // NOTE: Remember to replace the image paths with your new, optimized .webp files.
     const lifestyleTips = [
         { id: "diet", title: "Diet", icon: "src/icons/icons8-salad.gif", image: "src/assets/diet.jpg", tip: t("dietTip", { defaultValue: "Enjoy warm, cooked meals tailored to your Dosha..." }), extraTip: t("dietTipExtra", { defaultValue: "Try adding spices like cumin or coriander..." }) },
         { id: "yoga", title: "Yoga", icon: "src/icons/icons8-yoga-64.png", image: "src/assets/yoga.jpg", tip: t("yogaTip", { defaultValue: "Practice gentle poses like Surya Namaskar or Tree Pose..." }), extraTip: t("yogaTipExtra", { defaultValue: "Focus on grounding poses for Vata or cooling ones for Pitta..." }) },
@@ -50,7 +47,6 @@ const Homepage: React.FC = () => {
             <FloatingLeaves />
             <Navbar />
 
-            {/* Hero Section */}
             <div
                 className="relative min-h-[100vh] flex items-center"
                 style={{
@@ -79,7 +75,6 @@ const Homepage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Prakriti Section */}
             <div className="relative w-full py-16 -mt-28">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-12">
@@ -122,7 +117,6 @@ const Homepage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Ayurveda Services Section */}
             <div className="px-36 py-16 bg-logoGreen dark:bg-gray-800 shadow-md relative z-10 mb-8">
                 <h2 className="text-4xl font-bold text-center text-ayurBeige dark:text-ayurBeige mb-10">
                     {t("ayurvedaServices", { defaultValue: "Discover Your Prakriti Dosha" })}
@@ -163,7 +157,6 @@ const Homepage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Ayurvedic Lifestyle Tips Section */}
             <div id="lifestyle-tips" className="max-w-7xl mx-auto px-6 py-16 relative z-10 mx-4 mb-8">
                 <h2 className="text-4xl font-lora font-bold text-ayurGreen dark:text-ayurBeige mb-10 text-center">
                     {t("lifestyleTips", { defaultValue: "Ayurvedic Lifestyle Tips" })}
@@ -174,10 +167,12 @@ const Homepage: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
                     {lifestyleTips.slice(0, visibleCards).map((tip) => (
-                        <div
+                        <button
                             key={tip.id}
-                            className="bg-white dark:bg-gray-700 rounded-lg shadow-lg overflow-hidden transform transition-all duration-500 hover:scale-[1.02]"
+                            type="button"
                             onClick={() => toggleCard(tip.id)}
+                            aria-expanded={expandedCard === tip.id}
+                            className="bg-white dark:bg-gray-700 rounded-lg shadow-lg overflow-hidden transform transition-all duration-500 hover:scale-[1.02] text-left w-full focus:outline-none focus:ring-2 focus:ring-ayurGreen"
                         >
                             <div className="relative w-full h-48 overflow-hidden">
                                 <LazyLoadImage
@@ -217,7 +212,7 @@ const Homepage: React.FC = () => {
                                     )}
                                 </div>
                             </div>
-                        </div>
+                        </button>
                     ))}
                 </div>
 

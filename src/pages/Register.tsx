@@ -69,10 +69,8 @@ const Register: React.FC = () => {
         createdAt: new Date().toISOString(),
       });
       
-      // After creating the user doc, save any guest data to their new account
       await saveGuestDataToFirebase(user.uid);
 
-      // The onAuthStateChanged listener in AppContext will handle setUser
       navigate('/dashboard');
     } catch (err: any) {
       setError(t('registerError', { defaultValue: 'Registration failed. This email may already be in use.' }));
@@ -94,10 +92,8 @@ const Register: React.FC = () => {
         createdAt: new Date().toISOString(),
       }, { merge: true });
 
-      // After creating/merging the user doc, save any guest data
       await saveGuestDataToFirebase(user.uid);
       
-      // The onAuthStateChanged listener in AppContext will handle setUser
       navigate('/dashboard');
     } catch (err: any) {
       setError(t('registerError', { defaultValue: 'Google registration failed. Please try again.' }));
@@ -165,6 +161,7 @@ const Register: React.FC = () => {
                   placeholder="Full Name"
                   className="w-full pl-10 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-ayurGreen dark:focus:border-ayurGreen/70 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   disabled={isLoading}
+                  maxLength={100}
                 />
                 <UserCircleIcon className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
               </div>
@@ -176,6 +173,7 @@ const Register: React.FC = () => {
                   placeholder="Email Address"
                   className="w-full pl-10 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-ayurGreen dark:focus:border-ayurGreen/70 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   disabled={isLoading}
+                  maxLength={128}
                 />
                 <Mail className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
               </div>
@@ -187,6 +185,7 @@ const Register: React.FC = () => {
                   placeholder="Password"
                   className="w-full pl-10 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-ayurGreen dark:focus:border-ayurGreen/70 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   disabled={isLoading}
+                  maxLength={128}
                 />
                 <Lock className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
                 <button 
@@ -206,6 +205,7 @@ const Register: React.FC = () => {
                   placeholder="Confirm Password"
                   className="w-full pl-10 p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-ayurGreen dark:focus:border-ayurGreen/70 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   disabled={isLoading}
+                  maxLength={128}
                 />
                 <Lock className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
                 <button 

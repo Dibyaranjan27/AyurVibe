@@ -15,11 +15,10 @@ import pittaImage from '../assets/pitta.png';
 import kaphaImage from '../assets/kapha.png';
 import { db, updateDoc, doc } from '../data/firebase';
 
-// CHANGE: Data processing logic is now in its own helper function outside of the useEffect hook.
 const processQuizData = async (
     quizAnswers: Record<number, { dosha: string; text: string }>,
     guestPrakriti: string | null,
-    user: any // Replace with a more specific user type if available
+    user: any
 ) => {
     const doshaCounts = { Vata: 0, Pitta: 0, Kapha: 0 };
     const traits: Record<string, string[]> = { Vata: [], Pitta: [], Kapha: [], Other: [] };
@@ -90,7 +89,6 @@ const Results: React.FC = () => {
 
   const { user } = context || {};
 
-  // CHANGE: The useEffect hook is now much simpler.
   useEffect(() => {
     const loadResults = async () => {
         let quizAnswers: Record<number, { dosha: string, text: string }> | null = null;
@@ -116,10 +114,8 @@ const Results: React.FC = () => {
             return;
         }
 
-        // Call the helper function to process data and get state updates
         const results = await processQuizData(quizAnswers, guestPrakriti, user);
 
-        // Set all state at once
         setDoshaPercentages(results.percentages);
         setGroupedTraits(results.traits);
         setPrimaryDosha(results.primary);
@@ -148,7 +144,7 @@ const Results: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col items-center p-4 sm:p-8 pt-24 relative overflow-hidden">
       <FloatingLeaves />
-      <div className="max-w-4xl mt-24 w-full mx-auto px-4 sm:px-6 relative z-10 space-y-16">
+      <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 relative z-10 space-y-16">
         
         <motion.div className="text-center" initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }}>
           <p className="text-lg text-gray-600 dark:text-gray-400">Your Primary Dosha is</p>
@@ -174,7 +170,12 @@ const Results: React.FC = () => {
                     ))}
                   </div>
                   <div className="p-4 min-h-[400px]">
-                    {activeTab === 'recommendations' && <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6">{plan.recommendations.map((rec:any, index:number) => <RecommendationCard key={index} {...rec} />)}</motion.div>}
+                    {activeTab === 'recommendations' && 
+                        <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* CHANGE: Using a more stable key. Assuming rec.category is unique. */}
+                            {plan.recommendations.map((rec:any) => <RecommendationCard key={rec.category} {...rec} />)}
+                        </motion.div>
+                    }
                     {activeTab === 'diet' && <DietDonutChart {...plan.diet} />}
                     {activeTab === 'routine' && <RoutineTimetable routine={plan.routine} />}
                   </div>
@@ -201,9 +202,10 @@ const Results: React.FC = () => {
               <div key={dosha} className="mb-8">
                 <h4 className="text-xl font-semibold text-ayurGreen dark:text-ayurBeige mb-4">{t('traitsFor', { defaultValue: `Traits for ${dosha}` })}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {groupedTraits[dosha as keyof typeof groupedTraits].map((trait, index) => (
+                  {/* CHANGE: Using the 'trait' string itself as the key, as it is unique. */}
+                  {groupedTraits[dosha as keyof typeof groupedTraits].map((trait) => (
                     <RecommendationCard
-                      key={index}
+                      key={trait}
                       category={trait.split(':')[0]}
                       advice={trait.split(':')[1]?.trim() || ''}
                       icon="SparklesIcon"
