@@ -1,10 +1,10 @@
 import { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { 
-  signInWithEmailAndPassword, 
-  signInWithPopup, 
-  GoogleAuthProvider, 
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
   signInAnonymously,
   setPersistence,
   browserSessionPersistence,
@@ -60,6 +60,7 @@ const Login: React.FC = () => {
       setError(t('passwordError', { defaultValue: 'Password is required.' }));
       return false;
     }
+    setError('');
     return true;
   };
 
@@ -84,7 +85,17 @@ const Login: React.FC = () => {
       navigate('/dashboard');
 
     } catch (err: any) {
-      setError(t('loginError.invalidCredentials', { defaultValue: "Invalid email or password. Please try again." }));
+      console.error("Login Error:", err.code);
+      switch (err.code) {
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+          setError(t('loginError.invalidCredentials', { defaultValue: "Invalid email or password. Please try again." }));
+          break;
+        default:
+          setError(t('loginError.generic', { defaultValue: "An unexpected error occurred. Please try again." }));
+          break;
+      }
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +120,10 @@ const Login: React.FC = () => {
       await saveGuestDataToFirebase(googleUser.uid);
       navigate('/dashboard');
     } catch (err: any) {
-      if (err.code !== 'auth/popup-closed-by-user') {
+      console.error("Google Login Error:", err.code);
+      if (err.code === 'auth/account-exists-with-different-credential') {
+        setError(t('loginError.googleDiffCredential', { defaultValue: 'An account already exists with this email. Please sign in with your original method.' }));
+      } else if (err.code !== 'auth/popup-closed-by-user') {
         setError(t('loginError.google', { defaultValue: 'Google login failed. Please try again.' }));
       }
     } finally {
@@ -133,6 +147,7 @@ const Login: React.FC = () => {
       await saveGuestDataToFirebase(anonUser.uid);
       navigate('/dashboard');
     } catch (err: any) {
+      console.error("Anonymous Login Error:", err.code);
       setError(t('anonymousError', { defaultValue: 'Anonymous login failed. Please try again.' }));
     } finally {
       setIsAnonymousLoading(false);

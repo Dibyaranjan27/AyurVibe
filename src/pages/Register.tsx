@@ -36,25 +36,46 @@ const Register: React.FC = () => {
 
   if (!context) return null;
 
+  // CHANGE: The validation logic is now safer and more specific.
   const validateForm = () => {
     if (!name.trim() || name.length < 2) {
       setError(t('nameError', { defaultValue: 'Name is required and must be at least 2 characters.' }));
       return false;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // This regex is standard and safe.
     if (!email.trim() || !emailRegex.test(email)) {
       setError(t('emailError', { defaultValue: 'A valid email is required.' }));
       return false;
     }
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
-    if (!password || !passwordRegex.test(password)) {
-      setError(t('passwordError', { defaultValue: 'Password must be at least 6 characters and include uppercase, lowercase, number, and special character (e.g., !@#$%).' }));
+    
+    // Using multiple simple checks is safer than one complex regex for passwords.
+    if (password.length < 6) {
+      setError(t('passwordError.length', { defaultValue: 'Password must be at least 6 characters long.' }));
       return false;
     }
+    if (!/[a-z]/.test(password)) {
+      setError(t('passwordError.lowercase', { defaultValue: 'Password must contain a lowercase letter.' }));
+      return false;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError(t('passwordError.uppercase', { defaultValue: 'Password must contain an uppercase letter.' }));
+      return false;
+    }
+    if (!/\d/.test(password)) {
+      setError(t('passwordError.number', { defaultValue: 'Password must contain a number.' }));
+      return false;
+    }
+    if (!/[@$!%*?&]/.test(password)) {
+      setError(t('passwordError.special', { defaultValue: 'Password must contain a special character (e.g., !@#$%).' }));
+      return false;
+    }
+
     if (!confirmPassword || password !== confirmPassword) {
       setError(t('passwordMismatch', { defaultValue: 'Passwords do not match.' }));
       return false;
     }
+    
     setError('');
     return true;
   };
@@ -154,7 +175,7 @@ const Register: React.FC = () => {
   return (
     <div className="bg-gray-50 dark:bg-gray-900 flex items-center justify-center min-h-screen p-4">
       <FloatingLeaves />
-      <div className="w-full max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
+      <div className="w-full mt-24 max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
         <div className="flex flex-col lg:flex-row-reverse">
           <div className="lg:w-1/2 relative hidden lg:block animate-slideRight">
             <img 
