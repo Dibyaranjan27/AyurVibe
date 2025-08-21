@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { db } from '../data/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { useNotifications } from '../data/useNotifications';
+import { useNotifications } from '../hooks/useNotifications';
 import { AppContext } from './AppContext';
 
 interface Reminder {

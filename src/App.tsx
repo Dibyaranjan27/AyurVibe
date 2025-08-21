@@ -11,6 +11,8 @@ import ProfileView from './pages/ProfileView';
 import Dashboard from './pages/Dashboard';
 import FeedbackView from './pages/FeedbackView';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminLogin from './pages/AdminLogin'; // Import Admin Login
+import AdminRoute from './components/AdminRoute'; // Import Admin Route Guard
 import 'react-toastify/dist/ReactToastify.css';
 import Footer from './components/Footer';
 import { NotificationsProvider } from './context/NotificationsProvider';
@@ -32,10 +34,13 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/results" element={<Results />} />
               <Route path="/profile" element={<ProfileView />} />
-              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/feedback" element={<FeedbackView />} />
               <Route path="/notifications" element={<NotificationView />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminRoute />}>
+              <Route index element={<AdminDashboard />} />
+            </Route>
             </Routes>
           </main>
           <ToastContainer position="bottom-right" />

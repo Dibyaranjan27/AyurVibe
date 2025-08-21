@@ -112,13 +112,13 @@ const Navbar: React.FC = () => {
                       </div>
                       <div className="py-1">
                         {/* CHANGE: Updated dropdown links to use correct paths */}
-                        <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
+                        <Link to="/dashboard?view=profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
                           <UserCircleIcon className="h-5 w-5 mr-3" /> Profile
                         </Link>
                         <Link to="/dashboard" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
                           <ChartBarIcon className="h-5 w-5 mr-3" /> Dashboard
                         </Link>
-                        <Link to="/notifications" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
+                        <Link to="/dashboard?view=notifications" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
                           <BellIcon className="h-5 w-5 mr-3" /> Notifications
                         </Link>
                         <Link to="/feedback" onClick={() => setIsDropdownOpen(false)} className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-ayurBeige dark:hover:bg-gray-700">
