@@ -57,6 +57,7 @@ If you find any issues, please feel free to **raise an issue**. If you like the 
 -   ✏️ **Editable User Profiles:** Users can manage their personal and health details derived from the quiz.
 -   🔔 **Real-Time Browser Notifications:** A functional notification system for scheduled reminders.
 -   🌙 **Dark Mode Support:** A sleek, eye-friendly dark theme for comfortable use in low-light environments.
+-   👑 **Admin Section:** A secure, role-based admin dashboard to view all users and feedback submissions.
 -   🚀 **Modern & Accessible UI:** Built with a focus on clean design, accessibility, and smooth animations.
 
 ---
@@ -113,13 +114,23 @@ To run this project, you need to set up your own Firebase project.
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can only read and write their own document in the 'users' collection
+  
+    // Users Collection
     match /users/{userId} {
+      // A user can read/write their OWN document.
       allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // An ADMIN can read ANY user's document.
+      allow list, get: if request.auth != null && request.auth.token.admin == true;
     }
-    // Feedback can be written by any authenticated user
+
+    // Feedback Collection
     match /feedback/{feedbackId} {
+      // Any authenticated user can CREATE feedback.
       allow create: if request.auth != null;
+      
+      // ONLY an ADMIN can read the list of all feedback.
+      allow list, get: if request.auth != null && request.auth.token.admin == true;
     }
   }
 }
@@ -169,7 +180,46 @@ Rename this file to `.env.local` and fill in your actual Firebase credentials.
 ```sh
 npm run dev
 ```
-The application will be available at `http://localhost:5173/`.
+The application will be available at `http://localhost:5173/`. To access the admin login, go to `http://localhost:5173/admin-login`.
+
+## 👑 Becoming an Admin (Optional)
+
+The application uses Firebase Custom Claims to manage admin roles securely. To make a user an admin, you must run a script using the Firebase Admin SDK.
+
+### **Step 1: Get Your Firebase Service Account Key**
+1.  Go to your **Firebase Console** -> **Project Settings** -> **Service accounts**.
+2.  Click **"Generate new private key"**. A JSON file will be downloaded.
+3.  Place this file in the root of your project and rename it to `serviceAccountKey.json`.
+4.  **IMPORTANT:** Add `serviceAccountKey.json` to your `.gitignore` file immediately to prevent it from being committed to Git.
+
+   
+    ```
+    # .gitignore
+    serviceAccountKey.json
+    ```
+
+### **Step 2: Use the `setAdmin.js` Script**
+1.  Open the `setAdmin.js` script located in your project root.
+2.  Replace the placeholder email inside the script with the email address of a user who is already registered in your application.
+3.  Install the Firebase Admin SDK if you haven't already:
+
+   
+    ```sh
+    npm install firebase-admin
+    ```
+
+### **Step 3: Run the Script**
+Execute the script from your terminal. This is a one-time action for each admin user.
+
+
+```sh
+node setAdmin.js
+```
+
+### Important Security Note
+> The `serviceAccountKey.json` file grants **full administrative access** to your Firebase project. Protect it like a password. It is highly recommended to **delete this file from your project directory** after you have finished setting up your admin users, keeping a backup in a secure, private location (like a password manager).
+
+---
 
 ## 📂 File Structure
 
