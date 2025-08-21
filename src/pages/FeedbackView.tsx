@@ -75,7 +75,7 @@ const FeedbackView: React.FC = () => {
         <div className="relative min-h-screen bg-gray-200 dark:bg-gray-900 flex items-center justify-center p-4 overflow-hidden">
             <FloatingLeaves />
             <motion.div 
-                className="relative z-10 w-full max-w-lg sm:max-w-xl"
+                className="relative mb-12 z-10 w-full max-w-lg sm:max-w-xl"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
