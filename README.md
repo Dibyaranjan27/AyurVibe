@@ -81,6 +81,54 @@ If you find any issues, please feel free to **raise an issue**. If you like the 
 
 ---
 
+## 🔥 Firebase Setup Guide
+
+To run this project, you need to set up your own Firebase project.
+
+**1. Create a Firebase Project**
+- Go to the [Firebase Console](https://console.firebase.google.com/) and click **"Add project"**.
+- Give your project a name (e.g., "ayurvibe-app") and follow the setup steps.
+
+**2. Create a Web App**
+- In your new project's dashboard, click the web icon (`</>`) to add a new web app.
+- Register the app with a nickname (e.g., "AyurVibe Web").
+- After registering, Firebase will give you a `firebaseConfig` object. **Copy these credentials.**
+
+**3. Enable Authentication Methods**
+- In the Firebase console, go to **Build > Authentication**.
+- Click the **"Sign-in method"** tab.
+- You need to **enable** the following providers:
+  - **Email/Password**
+  - **Google** (you'll also need to provide a project support email)
+  - **Anonymous**
+
+**4. Set Up Firestore Database**
+- Go to **Build > Firestore Database**.
+- Click **"Create database"**.
+- Start in **production mode**. This ensures your data is secure by default.
+- Choose a location for your database servers.
+- Go to the **"Rules"** tab and paste the following rules. This allows users to read and write only their own data.
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only read and write their own document in the 'users' collection
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    // Feedback can be written by any authenticated user
+    match /feedback/{feedbackId} {
+      allow create: if request.auth != null;
+    }
+  }
+}
+```
+
+- Click **"Publish"** to save the rules.
+
+---
+
 ## 🔧 Requirements
 
 Before running the project, ensure you have the following installed:
