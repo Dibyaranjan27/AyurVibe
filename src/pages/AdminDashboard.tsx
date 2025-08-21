@@ -1,8 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/AppContext';
-import { getAllUsers, getAllFeedback } from '../data/firebase'; // We'll add getAllFeedback
+import { getAllUsers, getAllFeedback } from '../data/firebase';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
+// CHANGE: Import the star icons from Heroicons
+import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
+import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 
 interface DisplayUser { id: string; name: string; email: string; prakriti?: string; }
 interface Feedback { id: string; name: string; email: string; rating: number; category: string; message: string; submittedAt: Date; }
@@ -93,8 +96,11 @@ const AdminDashboard: React.FC = () => {
                     <p className="text-xs text-gray-500">{format(item.submittedAt, 'MMM d, yyyy h:mm a')}</p>
                   </div>
                   <div className="flex items-center">
+                    {/* CHANGE: Replaced the SVG path with imported Heroicon components for a clearer visual */}
                     {[...Array(5)].map((_, i) => (
-                      <svg key={i} className={`w-5 h-5 ${i < item.rating ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                        i < item.rating 
+                        ? <StarSolid key={`rating-star-${item.id}-${i}`} className="w-5 h-5 text-yellow-400" />
+                        : <StarOutline key={`rating-star-${item.id}-${i}`} className="w-5 h-5 text-gray-300" />
                     ))}
                   </div>
                 </div>
