@@ -10,7 +10,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  // Add any other user properties you might have, e.g., prakriti
+  mobile?: string;
   prakriti?: string; 
   healthDetails?: Record<string, any>;
 }
