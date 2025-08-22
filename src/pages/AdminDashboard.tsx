@@ -10,7 +10,7 @@ import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 // FIX: The 'prakriti' type now correctly allows for null values.
 interface DisplayUser { id: string; name: string; email: string; prakriti?: string | null; }
 
-// FIX: This interface now correctly matches the data shape from getAllFeedback.
+// FIX: This interface now correctly matches the full data shape from getAllFeedback.
 interface Feedback { id: string; name: string; email: string; rating: number; category: string; message: string; submittedAt: Date; }
 
 const AdminDashboard: React.FC = () => {
@@ -33,8 +33,9 @@ const AdminDashboard: React.FC = () => {
             getAllUsers(),
             getAllFeedback()
           ]);
-          setUsers(userList);
-          setFeedback(feedbackList);
+          // FIX: Cast the fetched data to the correct types to resolve the error.
+          setUsers(userList as DisplayUser[]);
+          setFeedback(feedbackList as Feedback[]);
         } catch (error) {
           console.error("Failed to fetch admin data:", error);
         } finally {
