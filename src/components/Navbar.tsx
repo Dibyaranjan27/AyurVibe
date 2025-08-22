@@ -156,7 +156,7 @@ const Navbar: React.FC = () => {
         {isMobileMenuOpen && (
           <motion.div initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: '100%' }} transition={{ duration: 0.3, ease: 'easeInOut' }} className="fixed inset-0 bg-white dark:bg-gray-900 z-[100] flex flex-col p-4">
             <div className="flex justify-between items-center mb-8">
-              <Link to="/" onClick={() => setIsMobileMenuOpen(false)}><img src="/src/assets/logo.png" alt="AyurVibe" className="h-20" /></Link>
+              <Link to="/" onClick={() => setIsMobileMenuOpen(false)}><img src={logo} alt="AyurVibe" className="h-20" /></Link>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 rounded-md text-gray-800 dark:text-white"><XMarkIcon className="h-7 w-7" /></button>
             </div>
             <nav className="flex flex-col items-center justify-center flex-grow space-y-8 text-2xl">
