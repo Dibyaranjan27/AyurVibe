@@ -91,7 +91,7 @@ const NotFound: React.FC = () => {
             <div className="absolute">
               {leaves.map((_, i) => (
                 <motion.div
-                  // CHANGE: The key is now more unique and stable.
+                  // CHANGE: The key is now more unique and stable for this static list.
                   key={`leaf-scatter-${i}`}
                   custom={i}
                   variants={leafVariants}
