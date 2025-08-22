@@ -8,7 +8,7 @@ export interface User {
   name: string;
   email: string;
   prakriti: string | null;
-  mobile: string;
+  mobile?: string;
   balanceHistory?: { date: string; score: number }[];
   streakDays?: string[];
   reminders?: { id: number; text: string; completed: boolean; dateTime: Date | null }[];

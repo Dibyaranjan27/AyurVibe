@@ -1,7 +1,7 @@
 import React from 'react';
 
 type AuthButtonProps = {
-  onClick: () => void;
+  onClick?: () => void;
   children: React.ReactNode;
   disabled?: boolean;
   loading?: boolean;

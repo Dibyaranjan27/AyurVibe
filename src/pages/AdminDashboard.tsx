@@ -7,7 +7,10 @@ import { format } from 'date-fns';
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 
-interface DisplayUser { id: string; name: string; email: string; prakriti?: string; }
+// FIX: The 'prakriti' type now correctly allows for null values.
+interface DisplayUser { id: string; name: string; email: string; prakriti?: string | null; }
+
+// FIX: This interface now correctly matches the data shape from getAllFeedback.
 interface Feedback { id: string; name: string; email: string; rating: number; category: string; message: string; submittedAt: Date; }
 
 const AdminDashboard: React.FC = () => {
