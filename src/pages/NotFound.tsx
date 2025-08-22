@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// CHANGE: Imported the 'Variants' type from framer-motion
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { HomeIcon } from '@heroicons/react/24/solid';
 import FloatingLeaves from '../components/FloatingLeaves';
@@ -22,7 +21,6 @@ const Leaf = ({ className }: { className?: string }) => (
 const NotFound: React.FC = () => {
   const leaves = Array.from({ length: 15 });
 
-  // CHANGE: Explicitly typed each animation object with the 'Variants' type
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -93,7 +91,8 @@ const NotFound: React.FC = () => {
             <div className="absolute">
               {leaves.map((_, i) => (
                 <motion.div
-                  key={i}
+                  // CHANGE: The key is now more unique and stable.
+                  key={`leaf-scatter-${i}`}
                   custom={i}
                   variants={leafVariants}
                   className="absolute"

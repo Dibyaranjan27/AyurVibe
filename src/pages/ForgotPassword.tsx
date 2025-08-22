@@ -27,7 +27,19 @@ const ForgotPassword: React.FC = () => {
       await sendPasswordResetEmail(auth, email);
       setIsSubmitted(true);
     } catch (err: any) {
-      setError(t('forgotPassword.userNotFound', { defaultValue: "No account found with this email address." }));
+      // CHANGE: Expanded error handling for more specific user feedback.
+      console.error("Password Reset Error:", err.code);
+      switch (err.code) {
+        case 'auth/user-not-found':
+          setError(t('forgotPassword.userNotFound', { defaultValue: "No account found with this email address." }));
+          break;
+        case 'auth/invalid-email':
+          setError(t('forgotPassword.invalidEmail', { defaultValue: "Please enter a valid email address." }));
+          break;
+        default:
+          setError(t('forgotPassword.genericError', { defaultValue: "Failed to send reset email. Please try again." }));
+          break;
+      }
     } finally {
       setIsLoading(false);
     }
@@ -49,8 +61,8 @@ const ForgotPassword: React.FC = () => {
           linkText: "← Back to Login"
         }}
         imageSide="left"
-        titleAlignment="center" // Center the title
-        showSocialLogins={false}  // Hide social logins
+        titleAlignment="center"
+        showSocialLogins={false}
       >
         <div className="text-center text-gray-700 dark:text-gray-300">
           <CheckCircle className="w-16 h-16 text-ayurGreen mx-auto mb-4" />
@@ -77,8 +89,8 @@ const ForgotPassword: React.FC = () => {
         linkText: "Log in"
       }}
       imageSide="left"
-      titleAlignment="center" // Center the title
-      showSocialLogins={false}  // Hide social logins
+      titleAlignment="center"
+      showSocialLogins={false}
     >
       <p className="text-center text-gray-600 dark:text-gray-400 mb-6 -mt-4">
         Enter your email and we'll send you a link to reset your password.
