@@ -7,6 +7,31 @@ import PageUpButton from "../components/PageUpButton";
 import FloatingLeaves from "../components/FloatingLeaves";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import 'react-lazy-load-image-component/src/effects/blur.css';
+import heroBanner from '/src/assets/Hero_banner.jpg';
+import hero4 from '/src/assets/hero4.webp';
+import vattaImg from '/src/assets/vatta.png';
+import pittaImg from '/src/assets/pitta.png';
+import kaphaImg from '/src/assets/kapha.png';
+
+// Import images for lifestyle tips
+import dietImage from '../assets/diet.jpg';
+import yogaImage from '../assets/yoga.jpg';
+import meditationImage from '../assets/meditation.jpg';
+import herbalImage from '../assets/herbal_medicine.jpg';
+import sleepImage from '../assets/sleeping.jpg';
+import breathingImage from '../assets/breathing_exercise.jpg';
+import massageImage from '../assets/massage_theropy.jpg';
+import routineImage from '../assets/daily_routine.jpg';
+
+// Import icons for lifestyle tips
+import dietIcon from '../icons/icons8-salad.gif';
+import yogaIcon from '../icons/icons8-yoga-64.png';
+import meditationIcon from '../icons/icons8-meditation-100.png';
+import herbalIcon from '../icons/icons8-supplement-bottle.gif';
+import sleepIcon from '../icons/icons8-sleeping.gif';
+import breathingIcon from '../icons/icons8-breath-100.png';
+import massageIcon from '../icons/icons8-massage-100.png';
+import routineIcon from '../icons/icons8-schedule.gif';
 
 const Homepage: React.FC = () => {
     const navigate = useNavigate();
@@ -32,14 +57,14 @@ const Homepage: React.FC = () => {
     if (!context) return null;
 
     const lifestyleTips = [
-        { id: "diet", title: "Diet", icon: "src/icons/icons8-salad.gif", image: "src/assets/diet.jpg", tip: t("dietTip", { defaultValue: "Enjoy warm, cooked meals tailored to your Dosha..." }), extraTip: t("dietTipExtra", { defaultValue: "Try adding spices like cumin or coriander..." }) },
-        { id: "yoga", title: "Yoga", icon: "src/icons/icons8-yoga-64.png", image: "src/assets/yoga.jpg", tip: t("yogaTip", { defaultValue: "Practice gentle poses like Surya Namaskar or Tree Pose..." }), extraTip: t("yogaTipExtra", { defaultValue: "Focus on grounding poses for Vata or cooling ones for Pitta..." }) },
-        { id: "meditation", title: "Meditation", icon: "src/icons/icons8-meditation-100.png", image: "src/assets/meditation.jpg", tip: t("meditationTip", { defaultValue: "Spend 10-20 minutes daily with mindfulness or mantra meditation..." }), extraTip: t("meditationTipExtra", { defaultValue: "Use a quiet space with incense to deepen your practice." }) },
-        { id: "herbal", title: "Herbal Remedies", icon: "src/icons/icons8-supplement-bottle.gif", image: "src/assets/herbal_medicine.jpg", tip: t("herbalTip", { defaultValue: "Incorporate turmeric, ashwagandha, or triphala to strengthen immunity..." }), extraTip: t("herbalTipExtra", { defaultValue: "Steep herbs in warm water for a soothing tea blend." }) },
-        { id: "sleep", title: "Sleep Routine", icon: "src/icons/icons8-sleeping.gif", image: "src/assets/sleeping.jpg", tip: t("sleepTip", { defaultValue: "Aim for 7-8 hours of sleep with a consistent schedule..." }), extraTip: t("sleepTipExtra", { defaultValue: "Avoid screens an hour before bed to improve sleep quality." }) },
-        { id: "breathing", title: "Breathing Exercises", icon: "src/icons/icons8-breath-100.png", image: "src/assets/breathing_exercise.jpg", tip: t("breathingTip", { defaultValue: "Try Pranayama techniques like Anulom Vilom to enhance lung function..." }), extraTip: t("breathingTipExtra", { defaultValue: "Practice in a ventilated area for best results." }) },
-        { id: "massage", title: "Massage Therapy", icon: "src/icons/icons8-massage-100.png", image: "src/assets/massage_theropy.jpg", tip: t("massageTip", { defaultValue: "Regular self-massage with warm oils helps balance doshas and improve circulation." }), extraTip: t("massageTipExtra", { defaultValue: "Use sesame oil for Vata, coconut oil for Pitta, and mustard oil for Kapha." }) },
-        { id: "routine", title: "Daily Routine", icon: "src/icons/icons8-schedule.gif", image: "src/assets/daily_routine.jpg", tip: t("routineTip", { defaultValue: "Follow a consistent daily schedule aligned with natural rhythms." }), extraTip: t("routineExtra", { defaultValue: "Wake up before sunrise and sleep by 10 PM for optimal health." }) },
+        { id: "diet", title: "Diet", icon: dietIcon, image: dietImage, tip: t("dietTip", { defaultValue: "Enjoy warm, cooked meals tailored to your Dosha..." }), extraTip: t("dietTipExtra", { defaultValue: "Try adding spices like cumin or coriander..." }) },
+        { id: "yoga", title: "Yoga", icon: yogaIcon, image: yogaImage, tip: t("yogaTip", { defaultValue: "Practice gentle poses like Surya Namaskar or Tree Pose..." }), extraTip: t("yogaTipExtra", { defaultValue: "Focus on grounding poses for Vata or cooling ones for Pitta..." }) },
+        { id: "meditation", title: "Meditation", icon: meditationIcon, image: meditationImage, tip: t("meditationTip", { defaultValue: "Spend 10-20 minutes daily with mindfulness or mantra meditation..." }), extraTip: t("meditationTipExtra", { defaultValue: "Use a quiet space with incense to deepen your practice." }) },
+        { id: "herbal", title: "Herbal Remedies", icon: herbalIcon, image: herbalImage, tip: t("herbalTip", { defaultValue: "Incorporate turmeric, ashwagandha, or triphala to strengthen immunity..." }), extraTip: t("herbalTipExtra", { defaultValue: "Steep herbs in warm water for a soothing tea blend." }) },
+        { id: "sleep", title: "Sleep Routine", icon: sleepIcon, image: sleepImage, tip: t("sleepTip", { defaultValue: "Aim for 7-8 hours of sleep with a consistent schedule..." }), extraTip: t("sleepTipExtra", { defaultValue: "Avoid screens an hour before bed to improve sleep quality." }) },
+        { id: "breathing", title: "Breathing Exercises", icon: breathingIcon, image: breathingImage, tip: t("breathingTip", { defaultValue: "Try Pranayama techniques like Anulom Vilom to enhance lung function..." }), extraTip: t("breathingTipExtra", { defaultValue: "Practice in a ventilated area for best results." }) },
+        { id: "massage", title: "Massage Therapy", icon: massageIcon, image: massageImage, tip: t("massageTip", { defaultValue: "Regular self-massage with warm oils helps balance doshas and improve circulation." }), extraTip: t("massageTipExtra", { defaultValue: "Use sesame oil for Vata, coconut oil for Pitta, and mustard oil for Kapha." }) },
+        { id: "routine", title: "Daily Routine", icon: routineIcon, image: routineImage, tip: t("routineTip", { defaultValue: "Follow a consistent daily schedule aligned with natural rhythms." }), extraTip: t("routineExtra", { defaultValue: "Wake up before sunrise and sleep by 10 PM for optimal health." }) },
     ];
 
     return (
@@ -50,7 +75,7 @@ const Homepage: React.FC = () => {
             <div
                 className="relative min-h-[100vh] flex items-center"
                 style={{
-                    backgroundImage: `url('src/assets/Hero_banner.jpg')`,
+                    backgroundImage: `url(${heroBanner})`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                 }}
@@ -105,7 +130,7 @@ const Homepage: React.FC = () => {
                             <div className="flex-1 h-[500px] relative">
                                 <div className="absolute inset-0 w-[500px] rounded-b-[20rem] overflow-hidden">
                                     <LazyLoadImage
-                                        src="src/assets/hero4.webp"
+                                        src={hero4}
                                         alt={t("ayurvedicTea")}
                                         className="w-full h-full object-cover"
                                         effect="blur"
@@ -127,7 +152,7 @@ const Homepage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
                     <div className="bg-white dark:bg-gray-700 rounded-t-[10rem] pt-16 pb-8 px-8 text-center shadow-lg w-72 h-72 flex flex-col items-center justify-center animate-fade-in">
                         <div className="w-24 h-24 mx-auto -mt-24 mb-6 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                            <img src="src/assets/vatta.png" alt="Vata" className="w-full h-full object-cover" />
+                            <img src={vattaImg} alt="Vata" className="w-full h-full object-cover" />
                         </div>
                         <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Vata</h3>
                         <p className="text-center text-sm text-gray-600 dark:text-gray-300">
@@ -137,7 +162,7 @@ const Homepage: React.FC = () => {
 
                     <div className="bg-white dark:bg-gray-700 rounded-t-[10rem] pt-16 pb-8 px-8 text-center shadow-lg w-72 h-72 flex flex-col items-center justify-center animate-fade-in delay-200">
                         <div className="w-24 h-24 mx-auto -mt-24 mb-6 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                            <img src="src/assets/pitta.png" alt="Pitta" className="w-full h-full object-cover" />
+                            <img src={pittaImg} alt="Pitta" className="w-full h-full object-cover" />
                         </div>
                         <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Pitta</h3>
                         <p className="text-center text-sm text-gray-600 dark:text-gray-300">
@@ -147,7 +172,7 @@ const Homepage: React.FC = () => {
 
                     <div className="bg-white dark:bg-gray-700 rounded-t-[10rem] pt-16 pb-8 px-8 text-center shadow-lg w-72 h-72 flex flex-col items-center justify-center animate-fade-in delay-400">
                         <div className="w-24 h-24 mx-auto -mt-24 mb-6 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                            <img src="src/assets/kapha.png" alt="Kapha" className="w-full h-full object-cover" />
+                            <img src={kaphaImg} alt="Kapha" className="w-full h-full object-cover" />
                         </div>
                         <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Kapha</h3>
                         <p className="text-center text-sm text-gray-600 dark:text-gray-300">
