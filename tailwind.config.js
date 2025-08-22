@@ -24,6 +24,7 @@ module.exports = {
         lora: ['Lora', 'serif'],
         openSans: ['Open Sans', 'sans-serif'],
         serif: ['Crimson Text', 'serif'],
+        anton: ['Anton', 'sans-serif'], // Add this line
       },
       keyframes: {
         'float-leaf': {

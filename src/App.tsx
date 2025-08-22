@@ -1,7 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 import { AppProvider } from './context/AppContext';
-import Navbar from './components/Navbar';
+import { NotificationsProvider } from './context/NotificationsProvider';
+
+// Layouts
+import MainLayout from './layouts/MainLayout'; // Import your new layout
+
+// Pages
 import Homepage from './pages/Homepage';
 import Quiz from './pages/Quiz';
 import Login from './pages/Login';
@@ -11,45 +15,49 @@ import ProfileView from './pages/ProfileView';
 import Dashboard from './pages/Dashboard';
 import FeedbackView from './pages/FeedbackView';
 import AdminDashboard from './pages/AdminDashboard';
-import AdminLogin from './pages/AdminLogin'; // Import Admin Login
-import AdminRoute from './components/AdminRoute'; // Import Admin Route Guard
-import 'react-toastify/dist/ReactToastify.css';
-import Footer from './components/Footer';
-import { NotificationsProvider } from './context/NotificationsProvider';
+import AdminLogin from './pages/AdminLogin';
 import NotificationView from './pages/NotificationView';
+import ForgotPassword from './pages/ForgotPassword';
+import NotFound from './pages/NotFound';
+
+// Components for routes
+import AdminRoute from './components/AdminRoute';
 
 function App() {
-
   return (
     <AppProvider>
       <NotificationsProvider> 
-      <Router>
-        <div className="min-h-screen bg-secondary dark:bg-dark-primary">
-          <Navbar />
-          <main>
-            <Routes>
-              <Route path="/" element={<Homepage />} />
-              <Route path="/quiz" element={<Quiz />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/results" element={<Results />} />
-              <Route path="/profile" element={<ProfileView />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/feedback" element={<FeedbackView />} />
-              <Route path="/notifications" element={<NotificationView />} />
-              <Route path="/admin-login" element={<AdminLogin />} />
-            <Route path="/admin" element={<AdminRoute />}>
-              <Route index element={<AdminDashboard />} />
+        <Router>
+          {/* Routes are now nested, making the layout system cleaner */}
+          <Routes>
+            {/* Routes WITH Navbar and Footer */}
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<Homepage />} />
+              <Route path="quiz" element={<Quiz />} />
+              <Route path="results" element={<Results />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="profile" element={<ProfileView />} />
+              <Route path="feedback" element={<FeedbackView />} />
+              <Route path="notifications" element={<NotificationView />} />
+              
+              <Route path="admin" element={<AdminRoute />}>
+                <Route index element={<AdminDashboard />} />
+              </Route>
             </Route>
-            </Routes>
-          </main>
-          <ToastContainer position="bottom-right" />
-          <Footer />
-        </div>
-      </Router>
+
+            {/* Routes WITHOUT Navbar and Footer */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
+            
+            {/* The 404 page is a top-level route without the main layout */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Router>
       </NotificationsProvider>
     </AppProvider>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -23,7 +23,7 @@ const PageUpButton: React.FC = () => {
   return (
     <button
       onClick={scrollToTop}
-      className={`fixed bottom-6 right-6 p-3 rounded-full bg-ayurGreen text-white shadow-lg transition-opacity ${isVisible ? 'opacity-100' : 'opacity-0'} hover:bg-ayurGreen/90`}
+      className={`fixed bottom-6 right-6 p-3 rounded-full bg-ayurGreen text-white shadow-lg z-4 transition-opacity ${isVisible ? 'opacity-100' : 'opacity-0'} hover:bg-ayurGreen/90`}
       aria-label="Scroll to top"
       style={{ pointerEvents: isVisible ? 'auto' : 'none' }}
     >

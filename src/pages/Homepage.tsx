@@ -142,7 +142,7 @@ const Homepage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="px-36 py-16 bg-logoGreen dark:bg-gray-800 shadow-md relative z-10 mb-8">
+            <div className="px-6 md:px-36 py-16 bg-logoGreen dark:bg-gray-800 shadow-md relative z-10 mb-8">
                 <h2 className="text-4xl font-bold text-center text-ayurBeige dark:text-ayurBeige mb-10">
                     {t("ayurvedaServices", { defaultValue: "Discover Your Prakriti Dosha" })}
                 </h2>
