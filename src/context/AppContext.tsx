@@ -11,7 +11,7 @@ interface User {
   name: string;
   email: string;
   mobile?: string;
-  prakriti?: string; 
+  prakriti?: string | null; 
   healthDetails?: Record<string, any>;
 }
 
@@ -22,6 +22,7 @@ interface AppContextType {
   setUser: (user: User | null) => void;
   language: string;
   setLanguage: (language: string) => void;
+  theme: string; // CHANGE: Added theme property
   heroContent: {
     heading: string;
     subheading: string;
@@ -37,14 +38,12 @@ i18n.use(initReactI18next).init({
       translation: {
         heroHeading: 'Embrace Wellness with AyurVibe',
         heroSubheading: 'Journey into Ayurveda with personalized quizzes, natural remedies, and a holistic lifestyle tailored to your unique Prakriti.',
-        // ... other english translations
       },
     },
     hi: {
       translation: {
-        heroHeading: 'आयुर्विब के साथ कल्याण को गले लगाओ', // Example translation
-        heroSubheading: 'व्यक्तिगत क्विज़, प्राकृतिक उपचार और अपनी अनूठी प्रकृति के अनुरूप एक समग्र जीवन शैली के साथ आयुर्वेद की यात्रा।', // Example translation
-        // ... other hindi translations
+        heroHeading: 'आयुर्विब के साथ कल्याण को गले लगाओ',
+        heroSubheading: 'व्यक्तिगत क्विज़, प्राकृतिक उपचार और अपनी अनूठी प्रकृति के अनुरूप एक समग्र जीवन शैली के साथ आयुर्वेद की यात्रा।',
       },
     },
   },
@@ -67,9 +66,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return localStorage.getItem('language') || 'en';
   });
 
+  // CHANGE: Added state for the theme string
+  const [theme, setTheme] = useState<string>(() => {
+    const savedDarkMode = localStorage.getItem('darkMode');
+    return savedDarkMode && JSON.parse(savedDarkMode) ? 'dark' : 'light';
+  });
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    // CHANGE: Update theme state when darkMode changes
+    setTheme(darkMode ? 'dark' : 'light'); 
   }, [darkMode]);
 
   useEffect(() => {
@@ -94,6 +101,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             email: firebaseUser.email || '',
             prakriti: firestoreData.prakriti,
             healthDetails: firestoreData.healthDetails,
+            mobile: firestoreData.mobile,
           };
           setUser(userData);
           localStorage.setItem('user', JSON.stringify(userData));
@@ -117,11 +125,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setUser,
     language,
     setLanguage,
+    theme, // CHANGE: Added theme to the context value
     heroContent: {
       heading: i18n.t('heroHeading'),
       subheading: i18n.t('heroSubheading'),
     },
-  }), [darkMode, user, language]);
+  }), [darkMode, user, language, theme]); // CHANGE: Added theme to dependency array
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

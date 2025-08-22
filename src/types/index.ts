@@ -16,8 +16,8 @@ export interface User {
 // In a file like src/types.ts or directly in your questions file
 export interface Option {
   text: string;
-  dosha: 'Vata' | 'Pitta' | 'Kapha';
-  illustration: string; // <-- Add this property
+  dosha: 'Vata' | 'Pitta' | 'Kapha' | 'Other';
+  illustration: string;
 }
 
 export interface Question {

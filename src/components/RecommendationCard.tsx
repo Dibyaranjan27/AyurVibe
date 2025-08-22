@@ -6,6 +6,7 @@ interface Props {
   category: string;
   advice: string;
   icon: string;
+  className?: string; // FIX: Add the optional className prop here
 }
 
 // A helper function to dynamically render the correct icon

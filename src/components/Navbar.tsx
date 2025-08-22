@@ -66,10 +66,11 @@ const Navbar: React.FC = () => {
   }, [context?.user]);
 
   if (!context) return null;
-  const { user, setUser } = context;
+  const { user} = context;
 
   const handleLogout = async () => {
-    if (setUser) {
+    // FIX: The condition should check if a 'user' exists, not if 'setUser' function exists.
+    if (user) {
       try {
         await signOut(auth);
         setIsDropdownOpen(false);

@@ -200,7 +200,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
       <AnimatePresence>
         {isBalanceModalOpen && <BalanceCheckModal onLog={handleLogBalance} onClose={() => setIsBalanceModalOpen(false)} />}
-        {isStreakModalOpen && <StreakCalendarModal streakDays={streakDays} onClose={() => setIsStreakModalOpen(false)} />}
+        {/* CHANGE: Added the missing setStreakDays prop */}
+        {isStreakModalOpen && <StreakCalendarModal streakDays={streakDays} setStreakDays={setStreakDays} onClose={() => setIsStreakModalOpen(false)} />}
         {isDoshaModalOpen && <DoshaInfoModal dosha={primaryDosha} onClose={() => setIsDoshaModalOpen(false)} />}
       </AnimatePresence>
     </>
