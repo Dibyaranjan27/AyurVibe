@@ -7,6 +7,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { saveGuestDataToFirebase } from '../utils/guestUtils';
 import { UserCircleIcon } from '@heroicons/react/24/solid';
 import FloatingLeaves from '@/components/FloatingLeaves';
+import leavesBackground from '../assets/leaves_background.jpg';
 
 // CHANGE: Created a reusable button component to remove duplication.
 const SocialButton: React.FC<{
@@ -117,7 +118,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
   const imageContent = (
     <div className={`lg:w-1/2 relative hidden lg:block ${imageSide === 'left' ? 'animate-slideLeft' : 'animate-slideRight'}`}>
       <img 
-        src="/src/assets/leaves_background.jpg"
+        src={leavesBackground}
         alt="Ayurveda"
         className="w-full h-full object-cover"
       />

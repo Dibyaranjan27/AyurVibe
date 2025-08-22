@@ -16,6 +16,7 @@ import {
   ChatBubbleBottomCenterTextIcon
 } from '@heroicons/react/24/solid';
 import DarkModeButton from './DarkModeButton';
+import logo from '../assets/logo.png';
 
 const NavLink = ({ to, children, onClick }: { to: string; children: React.ReactNode; onClick?: () => void }) => (
   <RouterNavLink
@@ -86,7 +87,7 @@ const Navbar: React.FC = () => {
     <>
       <nav className="flex items-center justify-between px-4 sm:px-8 mx-auto shadow-md bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center space-x-8">
-          <Link to="/"><img src="/src/assets/logo.png" alt="AyurVibe" className="h-20 sm:h-24" /></Link>
+          <Link to="/"><img src={logo} alt="AyurVibe" className="h-20 sm:h-24" /></Link>
           <div className="hidden md:flex space-x-6">
             <NavLink to="/">Home</NavLink>
             <NavLink to="/quiz">Quiz</NavLink>
