@@ -7,7 +7,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { saveGuestDataToFirebase } from '../utils/guestUtils';
 import { UserCircleIcon } from '@heroicons/react/24/solid';
 import FloatingLeaves from '@/components/FloatingLeaves';
-import leavesBackground from '/src/assets/leaves_background.jpg';
+import leavesBackground from '../assets/leaves_background.jpg';
 
 // CHANGE: Created a reusable button component to remove duplication.
 const SocialButton: React.FC<{

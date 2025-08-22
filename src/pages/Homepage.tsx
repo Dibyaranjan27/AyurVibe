@@ -7,11 +7,11 @@ import PageUpButton from "../components/PageUpButton";
 import FloatingLeaves from "../components/FloatingLeaves";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import 'react-lazy-load-image-component/src/effects/blur.css';
-import heroBanner from '/src/assets/Hero_banner.jpg';
-import hero4 from '/src/assets/hero4.webp';
-import vattaImg from '/src/assets/vatta.png';
-import pittaImg from '/src/assets/pitta.png';
-import kaphaImg from '/src/assets/kapha.png';
+import heroBanner from '../assets/Hero_banner.jpg';
+import hero4 from '../assets/hero4.webp';
+import vattaImg from '../assets/vatta.png';
+import pittaImg from '../assets/pitta.png';
+import kaphaImg from '../assets/kapha.png';
 
 // Import images for lifestyle tips
 import dietImage from '../assets/diet.jpg';

@@ -16,7 +16,7 @@ import {
   ChatBubbleBottomCenterTextIcon
 } from '@heroicons/react/24/solid';
 import DarkModeButton from './DarkModeButton';
-import logo from '/src/assets/logo.png';
+import logo from '../assets/logo.png';
 
 const NavLink = ({ to, children, onClick }: { to: string; children: React.ReactNode; onClick?: () => void }) => (
   <RouterNavLink
