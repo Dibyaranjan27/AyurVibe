@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid, PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from 'framer-motion';
-import ConfirmModal from '../components/ConfirmModal'; // Import the new modal
+import ConfirmModal from '../components/ConfirmModal';
 
 // Interfaces for our data
 interface DisplayUser { id: string; name: string; email: string; prakriti?: string | null; }
@@ -21,19 +21,16 @@ const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'users' | 'feedback'>('users');
   const [isLoading, setIsLoading] = useState(true);
   
-  // State for the user edit modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<DisplayUser | null>(null);
   const [editName, setEditName] = useState('');
   const [editPrakriti, setEditPrakriti] = useState('');
 
-  // State for the delete confirmation modal
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'user' | 'feedback' } | null>(null);
 
   const { user, darkMode } = context || {};
 
-  // Fetch initial data for the dashboard
   useEffect(() => {
     const fetchData = async () => {
       if (user) {
@@ -51,8 +48,6 @@ const AdminDashboard: React.FC = () => {
     };
     fetchData();
   }, [user]);
-
-  // --- Modal and Action Handlers ---
 
   const openEditModal = (userToEdit: DisplayUser) => {
     setCurrentUser(userToEdit);
@@ -101,7 +96,7 @@ const AdminDashboard: React.FC = () => {
         console.error("Failed to delete feedback:", error);
       }
     }
-    setItemToDelete(null); // Clean up after deletion
+    setItemToDelete(null);
   };
 
 
@@ -110,7 +105,7 @@ const AdminDashboard: React.FC = () => {
   }
   
   if (isLoading) {
-      return <div className="min-h-screen flex items-center justify-center">Loading Admin Data...</div>
+    return <div className="min-h-screen flex items-center justify-center">Loading Admin Data...</div>
   }
 
   return (
@@ -195,12 +190,14 @@ const AdminDashboard: React.FC = () => {
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-                  <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"/>
+                  {/* CHANGE: Added htmlFor and id to link the label and input */}
+                  <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                  <input id="edit-name" type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"/>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Prakriti</label>
-                  <input type="text" value={editPrakriti} onChange={(e) => setEditPrakriti(e.target.value)} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"/>
+                  {/* CHANGE: Added htmlFor and id to link the label and input */}
+                  <label htmlFor="edit-prakriti" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Prakriti</label>
+                  <input id="edit-prakriti" type="text" value={editPrakriti} onChange={(e) => setEditPrakriti(e.target.value)} className="w-full mt-1 p-2 border rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"/>
                 </div>
               </div>
               <div className="mt-6 flex justify-end space-x-4">
