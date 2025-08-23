@@ -144,20 +144,16 @@ service cloud.firestore {
   
     // Users Collection
     match /users/{userId} {
-      // A user can read/write their OWN document.
       allow read, write: if request.auth != null && request.auth.uid == userId;
-      
-      // An ADMIN can read ANY user's document.
       allow list, get: if request.auth != null && request.auth.token.admin == true;
+      allow delete: if request.auth != null && request.auth.token.admin == true;
     }
 
     // Feedback Collection
     match /feedback/{feedbackId} {
-      // Any authenticated user can CREATE feedback.
       allow create: if request.auth != null;
-      
-      // ONLY an ADMIN can read the list of all feedback.
       allow list, get: if request.auth != null && request.auth.token.admin == true;
+      allow delete: if request.auth != null && request.auth.token.admin == true;
     }
   }
 }
