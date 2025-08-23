@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 // CHANGE: Added query and orderBy for the feedback function
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, Timestamp, updateDoc, query, orderBy } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, Timestamp, updateDoc, query, orderBy, deleteDoc } from 'firebase/firestore';
 
 export interface User {
   id: string;
@@ -101,4 +101,24 @@ export const getAllFeedback = async () => {
   });
   
   return feedbackList;
+};
+
+// CHANGE: Add a function to update a user's details
+export const updateUser = async (userId: string, data: Partial<User>): Promise<void> => {
+  const userDocRef = doc(db, 'users', userId);
+  await updateDoc(userDocRef, data);
+};
+
+// CHANGE: Add a function to delete a feedback document
+export const deleteFeedback = async (feedbackId: string): Promise<void> => {
+  const feedbackDocRef = doc(db, 'feedback', feedbackId);
+  await deleteDoc(feedbackDocRef);
+};
+
+// IMPORTANT: Deleting a Firebase Auth user cannot be done securely from the client.
+// This requires a Firebase Cloud Function. The function below is for client-side
+// data deletion in Firestore only.
+export const deleteUserDocument = async (userId: string): Promise<void> => {
+  const userDocRef = doc(db, 'users', userId);
+  await deleteDoc(userDocRef);
 };
