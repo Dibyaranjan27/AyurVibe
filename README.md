@@ -12,10 +12,12 @@ This application provides users with an interactive quiz to determine their prim
   <img src="https://img.shields.io/badge/firebase-%23FFCA28.svg?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase"/>
 </div>
 
-<div align="center">
-  
-**[➡️ View Live Demo ⬅️](https://ayur-vibe.vercel.app/)**
+---
 
+<div align="center">
+  <a href="https://ayur-vibe.vercel.app/" target="_blank">
+    <img src="https://img.shields.io/badge/View_Live_Demo-346B4A?style=for-the-badge&logo=vercel&logoColor=white" alt="View Live Demo"/>
+  </a>
 </div>
 
 ---
@@ -29,21 +31,46 @@ If you find any issues, please feel free to **raise an issue**. If you like the 
 
 ## 🖥️ Screenshots
 
-<p align="center">
-  <img src="path/to/your/homepage-screenshot.png" alt="AyurVibe Homepage Screenshot" width="700">
-  <br/>
-  <em>Homepage</em>
-</p>
-<p align="center">
-  <img src="path/to/your/quiz-screenshot.png" alt="AyurVibe Quiz Screenshot" width="700">
-  <br/>
-  <em>Interactive Dosha Quiz</em>
-</p>
-<p align="center">
-  <img src="path/to/your/dashboard-screenshot.png" alt="AyurVibe Dashboard Screenshot" width="700">
-  <br/>
-  <em>Personalized User Dashboard</em>
-</p>
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="https://github.com/Dibyaranjan27/AyurVibe/blob/main/screenshots/ayur-vibe.vercel.app_%20homepage.png" alt="AyurVibe Homepage Screenshot" width="400">
+        <br/>
+        <em>Homepage</em>
+      </td>
+      <td align="center">
+        <img src="https://github.com/Dibyaranjan27/AyurVibe/blob/main/screenshots/ayur-vibe.vercel.app_results.png" alt="AyurVibe Results Screenshot" width="400">
+        <br/>
+        <em>Personalized Dosha Results</em>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="https://github.com/Dibyaranjan27/AyurVibe/blob/main/screenshots/ayur-vibe.vercel.app_%20quiz.png" alt="AyurVibe Quiz Screenshot" width="400">
+        <br/>
+        <em>Interactive Dosha Quiz</em>
+      </td>
+      <td align="center">
+        <img src="https://github.com/Dibyaranjan27/AyurVibe/blob/main/screenshots/ayur-vibe.vercel.app_dashboard.png" alt="AyurVibe Dashboard Screenshot" width="400">
+        <br/>
+        <em>Personalized User Dashboard</em>
+      </td>
+    </tr>
+     <tr>
+      <td align="center">
+        <img src="https://github.com/Dibyaranjan27/AyurVibe/blob/main/screenshots/ayur-vibe.vercel.app_login.png" alt="AyurVibe Login Screenshot" width="400">
+        <br/>
+        <em>Login Page</em>
+      </td>
+      <td align="center">
+        <img src="https://github.com/Dibyaranjan27/AyurVibe/blob/main/screenshots/ayur-vibe.vercel.app_register.png" alt="AyurVibe Register Screenshot" width="400">
+        <br/>
+        <em>Registration Page</em>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ---
 
