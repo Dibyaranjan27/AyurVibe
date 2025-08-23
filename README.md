@@ -69,6 +69,18 @@ If you find any issues, please feel free to **raise an issue**. If you like the 
         <em>Registration Page</em>
       </td>
     </tr>
+     <tr>
+      <td align="center">
+        <img src="https://github.com/Dibyaranjan27/AyurVibe/blob/main/screenshots/ayur-vibe.vercel.app_adminDashboard.png" alt="Admin Dashboard - User Management" width="400">
+        <br/>
+        <em>Admin Dashboard - User Management</em>
+      </td>
+      <td align="center">
+        <img src="https://github.com/Dibyaranjan27/AyurVibe/blob/main/screenshots/ayur-vibe.vercel.app_adminDashboard-feedback.png" alt="Admin Dashboard - Feedback View" width="400">
+        <br/>
+        <em>Admin Dashboard - Feedback View</em>
+      </td>
+    </tr>
   </table>
 </div>
 
