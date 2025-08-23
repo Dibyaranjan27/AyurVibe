@@ -7,7 +7,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { saveGuestDataToFirebase } from '../utils/guestUtils';
 import { UserCircleIcon } from '@heroicons/react/24/solid';
 import FloatingLeaves from '@/components/FloatingLeaves';
-
+import leavesBackground from '../assets/leaves_background.jpg'; // <-- Replace with your image path
 // Reusable button component to reduce duplication
 const SocialButton: React.FC<{
   onClick: () => void;
@@ -120,7 +120,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
   const imageContent = (
     <div className={`lg:w-1/2 relative hidden lg:block ${imageSide === 'left' ? 'animate-slideLeft' : 'animate-slideRight'}`}>
       <img 
-        src="/src/assets/leaves_background.jpg"
+        src={leavesBackground}
         alt="Ayurveda"
         className="w-full h-full object-cover"
       />
