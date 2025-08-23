@@ -14,7 +14,7 @@ This application provides users with an interactive quiz to determine their prim
 
 <div align="center">
   
-**[➡️ Live Demo Coming Soon! ⬅️]**
+**[➡️ View Live Demo ⬅️](https://ayur-vibe.vercel.app/)**
 
 </div>
 
@@ -29,7 +29,7 @@ If you find any issues, please feel free to **raise an issue**. If you like the 
 
 ## 🖥️ Screenshots
 
-<!--<p align="center">
+<p align="center">
   <img src="path/to/your/homepage-screenshot.png" alt="AyurVibe Homepage Screenshot" width="700">
   <br/>
   <em>Homepage</em>
@@ -43,7 +43,7 @@ If you find any issues, please feel free to **raise an issue**. If you like the 
   <img src="path/to/your/dashboard-screenshot.png" alt="AyurVibe Dashboard Screenshot" width="700">
   <br/>
   <em>Personalized User Dashboard</em>
-</p>-->
+</p>
 
 ---
 
@@ -233,8 +233,9 @@ A brief overview of the project's file structure.
 │   ├── components/         # Reusable UI components (Navbar, Buttons, Cards, etc.)
 │   ├── context/            # React Context providers (AppContext, NotificationsProvider)
 │   ├── data/               # Firebase config, static data (questions, plans)
-│   ├── hooks/              # Custom hooks (useOnClickOutside)
+│   ├── hooks/              # Custom hooks (useOnClickOutside, useNotifications)
 │   ├── icons/              # Static icons or icon components
+│   ├── layouts/            # Main Layout for the routing
 │   ├── pages/              # Top-level page components (Homepage, Login, Dashboard, etc.)
 │   ├── styles/             # Additional global styles
 │   ├── types/              # TypeScript type definitions (e.g., for quiz questions)
