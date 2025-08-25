@@ -146,6 +146,7 @@ const Register: React.FC = () => {
           type="submit"
           disabled={isLoading}
           loading={isLoading}
+          loadingText="Registering..." // Add this line
         >
           Register
         </AuthButton>

@@ -126,6 +126,7 @@ const Login: React.FC = () => {
           type="submit"
           disabled={isLoading}
           loading={isLoading}
+          loadingText="Logging in..." // Add this line
         >
           Login
         </AuthButton>
