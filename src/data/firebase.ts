@@ -132,7 +132,8 @@ export const deleteUserAccount = async (password: string): Promise<void> => {
   const auth = getAuth();
   const user = auth.currentUser;
 
-  if (!user || !user.email) {
+  // CHANGE: Used optional chaining for a cleaner check.
+  if (!user?.email) {
     throw new Error("No user is currently signed in or user has no email.");
   }
 
