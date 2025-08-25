@@ -7,6 +7,7 @@ type AuthButtonProps = {
   loading?: boolean;
   type?: 'button' | 'submit';
   className?: string;
+  loadingText?: string; // CHANGE: Added new prop for loading text
 };
 
 const AuthButton: React.FC<AuthButtonProps> = ({
@@ -16,6 +17,7 @@ const AuthButton: React.FC<AuthButtonProps> = ({
   loading = false,
   type = 'button',
   className = '',
+  loadingText = 'Processing...' // CHANGE: Added a default value
 }) => {
   return (
     <button
@@ -30,7 +32,7 @@ const AuthButton: React.FC<AuthButtonProps> = ({
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" />
           </svg>
-          Registering...
+          {loadingText} {/* CHANGE: Used the new prop here */}
         </>
       ) : (
         children

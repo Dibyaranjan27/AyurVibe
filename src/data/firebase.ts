@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider,     reauthenticateWithCredential, EmailAuthProvider,deleteUser } from 'firebase/auth';
 // CHANGE: Added query and orderBy for the feedback function
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, Timestamp, updateDoc, query, orderBy, deleteDoc } from 'firebase/firestore';
 
@@ -121,4 +121,24 @@ export const deleteFeedback = async (feedbackId: string): Promise<void> => {
 export const deleteUserDocument = async (userId: string): Promise<void> => {
   const userDocRef = doc(db, 'users', userId);
   await deleteDoc(userDocRef);
+};
+
+/**
+ * Securely deletes a user's account from Authentication and their data from Firestore.
+ * Requires the user's password to re-authenticate them before deletion.
+ * @param password The user's current password.
+ */
+export const deleteUserAccount = async (password: string): Promise<void> => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  if (!user || !user.email) {
+    throw new Error("No user is currently signed in or user has no email.");
+  }
+
+  const credential = EmailAuthProvider.credential(user.email, password);
+  await reauthenticateWithCredential(user, credential);
+  await deleteDoc(doc(db, 'users', user.uid));
+
+  await deleteUser(user);
 };

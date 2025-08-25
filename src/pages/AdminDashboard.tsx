@@ -178,6 +178,8 @@ const AdminDashboard: React.FC = () => {
         onConfirm={handleConfirmDelete}
         title={`Delete ${itemToDelete?.type}`}
         message={`Are you sure you want to delete this ${itemToDelete?.type}? This action cannot be undone.`}
+        variant="danger"
+        confirmText="Delete"
       />
       
       <AnimatePresence>
